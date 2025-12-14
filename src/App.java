@@ -1,12 +1,12 @@
 
 import javax.swing.SwingUtilities;
-import view.LaundryFrame;
+import view.LoginFrame;
 
 public class App {
 
     public static void main(String[] args) throws Exception {
         SwingUtilities.invokeLater(() -> {
-            new LaundryFrame().setVisible(true);
+            new LoginFrame().setVisible(true);
         });
     }
 }

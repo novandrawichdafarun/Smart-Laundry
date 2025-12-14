@@ -24,3 +24,14 @@ CREATE TABLE transaksi (
     tgl_selesai_estimasi DATETIME,
     FOREIGN KEY (id_pelanggan) REFERENCES pelanggan(id_pelanggan)
 );
+
+-- Membuat tabel pengguna
+CREATE TABLE users (
+    id_user INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    role ENUM('admin', 'staff') DEFAULT 'staff'
+);
+
+-- Masukkan akun default (Username: admin, Password: 123)
+INSERT INTO users (username, password, role) VALUES ('admin', '123', 'admin');

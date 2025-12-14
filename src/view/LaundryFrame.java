@@ -30,6 +30,7 @@ public class LaundryFrame extends JFrame {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
+        //? Form Panel
         JPanel panelForm = new JPanel(new GridLayout(8, 2, 5, 5));
         panelForm.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
@@ -57,6 +58,7 @@ public class LaundryFrame extends JFrame {
         chkExpress = new JCheckBox("Express (+5000/kg)");
         panelForm.add(chkExpress);
 
+        //? Button Panel
         JButton btnHitung = new JButton("Hitung & Simpan");
         lblTotal = new JLabel("Total: Rp 0");
         panelForm.add(btnHitung);
@@ -72,6 +74,7 @@ public class LaundryFrame extends JFrame {
         JButton btnUpdate = new JButton("Update Status Cucian (Klik baris tabel dulu)");
         add(btnUpdate, BorderLayout.SOUTH);
 
+        //? Action Listener
         btnHitung.addActionListener(e -> prosesTransaksi());
         btnUpdate.addActionListener(e -> prosesUpdateStatus());
     }
