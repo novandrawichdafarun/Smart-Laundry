@@ -1,10 +1,27 @@
 package view;
 
-import controller.TransaksiController;
-import java.awt.*;
-import javax.swing.*;
+import java.awt.BorderLayout;
+import java.awt.GridLayout;
+
+import javax.swing.BorderFactory;
+import javax.swing.InputVerifier;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
-import models.*;
+
+import controller.TransaksiController;
+import models.CuciKering;
+import models.Layanan;
+import models.Setrika;
 
 public class LaundryFrame extends JFrame {
 
@@ -40,6 +57,17 @@ public class LaundryFrame extends JFrame {
 
         panelForm.add(new JLabel("No Hp:"));
         txtHp = new JTextField();
+        txtHp.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                char c = e.getKeyChar();
+
+                //! Jika bukan angka, batalkan input (consume)
+                if (!Character.isDigit(c)) {
+                    e.consume();
+                }
+            }
+        });
         panelForm.add(txtHp);
 
         panelForm.add(new JLabel("Alamat:"));
@@ -48,6 +76,24 @@ public class LaundryFrame extends JFrame {
 
         panelForm.add(new JLabel("Berat (Kg):"));
         txtBerat = new JTextField();
+        txtBerat.setInputVerifier(new InputVerifier() {
+            @Override
+            public boolean verify(JComponent input) {
+                JTextField tf = (JTextField) input;
+                try {
+                    double berat = Double.parseDouble(tf.getText());
+                    if (berat <= 0) {
+                        JOptionPane.showMessageDialog(null, "Berat harus lebih dari 0!");
+                        return false;
+                    }
+                    return true;
+                } catch (NumberFormatException e) {
+                    JOptionPane.showMessageDialog(null, "Berat harus berupa angka valid!");
+                    return false;
+                }
+            }
+        });
+
         panelForm.add(txtBerat);
 
         panelForm.add(new JLabel("Layanan:"));

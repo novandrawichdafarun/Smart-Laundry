@@ -10,10 +10,18 @@ public class DBConnection {
     private static final String USER = "root";
     private static final String PASS = "";
 
+    private static Connection instance;
+
+    public DBConnection() {
+    }
+
     public static Connection getConnection() {
         try {
-            System.out.println("Terhubung ke Database");
-            return DriverManager.getConnection(URL, USER, PASS);
+            if (instance == null || instance.isClosed()) {
+                instance = DriverManager.getConnection(URL, USER, PASS);
+                System.out.println("Koneksi Baru Dibuat ke Database");
+            }
+            return instance;
         } catch (SQLException e) {
             System.err.println("Koneksi Gagal: " + e.getMessage());
             return null;
