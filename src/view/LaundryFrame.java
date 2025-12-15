@@ -213,10 +213,15 @@ public class LaundryFrame extends JFrame {
 
         dataPanel.add(scrollPane, BorderLayout.CENTER);
 
-        JButton btnUpdate = createButton("Update Status Cucian", new Color(243, 156, 18)); //! Orange
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         bottomPanel.setBackground(BG_COLOR);
+
+        JButton btnUpdate = createButton("Update Status Cucian", new Color(243, 156, 18)); //! Orange
+        JButton btnDelete = createButton("Hapus Data", new Color(231, 76, 60)); //! Merah
+
         bottomPanel.add(btnUpdate);
+        bottomPanel.add(btnDelete);
+
         dataPanel.add(bottomPanel, BorderLayout.SOUTH);
 
         add(dataPanel, BorderLayout.CENTER);
@@ -224,6 +229,7 @@ public class LaundryFrame extends JFrame {
         //? Action Listener
         btnHitung.addActionListener(e -> prosesTransaksi());
         btnUpdate.addActionListener(e -> prosesUpdateStatus());
+        btnDelete.addActionListener(e -> prosesDelete());
     }
 
     private void prosesTransaksi() {
@@ -284,6 +290,31 @@ public class LaundryFrame extends JFrame {
             showCustomDialog("Status Updated", "Status cucian berhasil diperbarui.", INFO_COLOR);
         } else {
             showCustomDialog("Pilih Data", "Klik baris transaksi pada terlebih dahulu!", WARNING_COLOR);
+        }
+    }
+
+    private void prosesDelete() {
+        int baris = table.getSelectedRow();
+
+        if (baris >= 0) {
+            int id = (int) tableModel.getValueAt(baris, 0);
+            String nama = (String) tableModel.getValueAt(baris, 1);
+
+            int confirm = JOptionPane.showConfirmDialog(this,
+                    "Apakah anda yakin ingin menghapus transaksi milik " + nama + "?\nData yang dihapus tidak bisa dikembalikan.",
+                    "Konfirmasi Hapus",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE);
+            if (confirm == JOptionPane.YES_OPTION) {
+                if (controller.deleteTransaksi(id)) {
+                    showCustomDialog("Berhasil", "Data transaksi berhasil dihapus.", SUCCESS_COLOR);
+                    controller.loadData(tableModel);
+                } else {
+                    showCustomDialog("Gagal", "Terjadi kesalahan saat menghapus data.", ERROR_COLOR);
+                }
+            } 
+        } else {
+            showCustomDialog("Pilih Data", "Silahkan pilih baris data yang ingin dihapus!", WARNING_COLOR);
         }
     }
 

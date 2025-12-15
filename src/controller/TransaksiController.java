@@ -1,8 +1,14 @@
 package controller;
 
-import config.DBConnection;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
 import javax.swing.table.DefaultTableModel;
+
+import config.DBConnection;
 
 public class TransaksiController {
 
@@ -93,6 +99,18 @@ public class TransaksiController {
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+    }
+
+    public boolean deleteTransaksi(int id) {
+        String sql = "DELETE FROM transaksi WHERE id_transaksi = ?";
+        try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();;
+            return false;
         }
     }
 }
