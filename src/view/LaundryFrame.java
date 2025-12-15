@@ -1,14 +1,23 @@
 package view;
 
 import java.awt.BorderLayout;
-import java.awt.GridLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.geom.RoundRectangle2D;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.InputVerifier;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -16,7 +25,10 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 
 import controller.TransaksiController;
 import models.CuciKering;
@@ -31,7 +43,19 @@ public class LaundryFrame extends JFrame {
     private JLabel lblTotal;
     private JTable table;
     private DefaultTableModel tableModel;
-    private TransaksiController controller;
+    private final TransaksiController controller;
+
+    //? Warna Palet
+    private final Color PRIMARY_COLOR = new Color(52, 152, 219);
+    private final Color ACCENT_COLOR = new Color(41, 128, 185);
+    private final Color BG_COLOR = new Color(245, 247, 250);
+    private final Color PANEL_COLOR = Color.WHITE;
+
+    //? Warna untuk Notifikasi (Tambahkan ini)
+    private final Color SUCCESS_COLOR = new Color(46, 204, 113);
+    private final Color ERROR_COLOR = new Color(231, 76, 60);
+    private final Color WARNING_COLOR = new Color(243, 156, 18);
+    private final Color INFO_COLOR = new Color(52, 152, 219);
 
     public LaundryFrame() {
         controller = new TransaksiController();
@@ -41,22 +65,54 @@ public class LaundryFrame extends JFrame {
 
     private void initUI() {
         // TODO Auto-generated method stub
-        setTitle("Smart Laundry System");
-        setSize(900, 600);
+        setTitle("Smart Laundry System - Dashboard");
+        setSize(1000, 650);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
+        getContentPane().setBackground(BG_COLOR);
 
-        //? Form Panel
-        JPanel panelForm = new JPanel(new GridLayout(8, 2, 5, 5));
-        panelForm.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        //? Header
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setBackground(PRIMARY_COLOR);
+        headerPanel.setBorder(new EmptyBorder(15, 20, 15, 20));
 
-        panelForm.add(new JLabel("Nama Pelanggan:"));
-        txtNama = new JTextField();
-        panelForm.add(txtNama);
+        JLabel lblBrand = new JLabel("Smart Laundry System");
+        lblBrand.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        lblBrand.setForeground(Color.WHITE);
 
-        panelForm.add(new JLabel("No Hp:"));
-        txtHp = new JTextField();
+        JLabel lblUser = new JLabel("Admin Panel | " + java.time.LocalDate.now());
+        lblUser.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        lblUser.setForeground(new Color(230, 230, 230));
+
+        headerPanel.add(lblBrand, BorderLayout.WEST);
+        headerPanel.add(lblUser, BorderLayout.EAST);
+        add(headerPanel, BorderLayout.NORTH);
+
+        //? Input Panel
+        JPanel inputPanel = new JPanel();
+        inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS));
+        inputPanel.setBackground(PANEL_COLOR);
+        inputPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        inputPanel.setPreferredSize(new Dimension(320, 0));
+
+        //? Judul Input
+        JLabel lblInputTitle = new JLabel("Input Transaksi Baru");
+        lblInputTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        lblInputTitle.setForeground(PRIMARY_COLOR);
+        lblInputTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        inputPanel.add(lblInputTitle);
+        inputPanel.add(Box.createVerticalStrut(20));
+
+        //? Form Fields
+        inputPanel.add(createLabel("Nama Pelanggan:"));
+        txtNama = createTextField();
+        inputPanel.add(txtNama);
+        inputPanel.add(Box.createVerticalStrut(10));
+
+        inputPanel.add(createLabel("No Hp:"));
+        txtHp = createTextField();
         txtHp.addKeyListener(new java.awt.event.KeyAdapter() {
             @Override
             public void keyTyped(java.awt.event.KeyEvent e) {
@@ -68,14 +124,16 @@ public class LaundryFrame extends JFrame {
                 }
             }
         });
-        panelForm.add(txtHp);
+        inputPanel.add(txtHp);
+        inputPanel.add(Box.createVerticalStrut(10));
 
-        panelForm.add(new JLabel("Alamat:"));
-        txtAlamat = new JTextField();
-        panelForm.add(txtAlamat);
+        inputPanel.add(createLabel("Alamat:"));
+        txtAlamat = createTextField();
+        inputPanel.add(txtAlamat);
+        inputPanel.add(Box.createVerticalStrut(10));
 
-        panelForm.add(new JLabel("Berat (Kg):"));
-        txtBerat = new JTextField();
+        inputPanel.add(createLabel("Berat (Kg):"));
+        txtBerat = createTextField();
         txtBerat.setInputVerifier(new InputVerifier() {
             @Override
             public boolean verify(JComponent input) {
@@ -93,32 +151,75 @@ public class LaundryFrame extends JFrame {
                 }
             }
         });
+        inputPanel.add(txtBerat);
+        inputPanel.add(Box.createVerticalStrut(10));
 
-        panelForm.add(txtBerat);
-
-        panelForm.add(new JLabel("Layanan:"));
+        inputPanel.add(new JLabel("Jenis Layanan:"));
         cmbLayanan = new JComboBox<>(new String[]{"Cuci Kering", "Setrika"});
-        panelForm.add(cmbLayanan);
+        cmbLayanan.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        cmbLayanan.setBackground(Color.WHITE);
+        cmbLayanan.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        cmbLayanan.setAlignmentX(Component.LEFT_ALIGNMENT);
+        inputPanel.add(cmbLayanan);
+        inputPanel.add(Box.createVerticalStrut(10));
 
-        panelForm.add(new JLabel("Opsi:"));
-        chkExpress = new JCheckBox("Express (+5000/kg)");
-        panelForm.add(chkExpress);
+        chkExpress = new JCheckBox("Layanan Express (+5000/kg)");
+        chkExpress.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        chkExpress.setBackground(PANEL_COLOR);
+        chkExpress.setAlignmentX(Component.LEFT_ALIGNMENT);
+        inputPanel.add(chkExpress);
+        inputPanel.add(Box.createVerticalStrut(20));
 
-        //? Button Panel
-        JButton btnHitung = new JButton("Hitung & Simpan");
+        //? Button & Label Total
+        JButton btnHitung = createButton("Simpan Transaksi", PRIMARY_COLOR);
+        btnHitung.setAlignmentX(Component.LEFT_ALIGNMENT);
+
         lblTotal = new JLabel("Total: Rp 0");
-        panelForm.add(btnHitung);
-        panelForm.add(lblTotal);
+        lblTotal.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        lblTotal.setForeground(new Color(39, 174, 96)); //! Hijau
+        lblTotal.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        add(panelForm, BorderLayout.NORTH);
+        inputPanel.add(lblTotal);
+        inputPanel.add(Box.createVerticalStrut(10));
+        inputPanel.add(btnHitung);
+
+        //! Panel input ke ScrollPane (layar kecil)
+        JScrollPane scrollInput = new JScrollPane(inputPanel);
+        scrollInput.setBorder(null);
+        add(scrollInput, BorderLayout.WEST);
+
+        //? Data Panel
+        JPanel dataPanel = new JPanel(new BorderLayout());
+        dataPanel.setBackground(BG_COLOR);
+        dataPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
         String[] kolom = {"ID", "Nama", "Layanan", "Berat", "Biaya", "Status"};
-        tableModel = new DefaultTableModel(kolom, 0);
-        table = new JTable(tableModel);
-        add(new JScrollPane(table), BorderLayout.CENTER);
+        tableModel = new DefaultTableModel(kolom, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
 
-        JButton btnUpdate = new JButton("Update Status Cucian (Klik baris tabel dulu)");
-        add(btnUpdate, BorderLayout.SOUTH);
+        table = new JTable(tableModel);
+        styleTable(table);
+
+        JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getViewport().setBackground(Color.WHITE);
+
+        dataPanel.add(new JLabel("Riwayat Transaksi"), BorderLayout.NORTH);
+        dataPanel.getComponent(0).setFont(new Font("Segoe UI", Font.BOLD, 16));
+
+        dataPanel.add(scrollPane, BorderLayout.CENTER);
+
+        JButton btnUpdate = createButton("Update Status Cucian", new Color(243, 156, 18)); //! Orange
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        bottomPanel.setBackground(BG_COLOR);
+        bottomPanel.add(btnUpdate);
+        dataPanel.add(bottomPanel, BorderLayout.SOUTH);
+
+        add(dataPanel, BorderLayout.CENTER);
 
         //? Action Listener
         btnHitung.addActionListener(e -> prosesTransaksi());
@@ -135,6 +236,11 @@ public class LaundryFrame extends JFrame {
             boolean Express = chkExpress.isSelected();
             String jenis = (String) cmbLayanan.getSelectedItem();
 
+            if (nama.isEmpty() || txtBerat.getText().isEmpty()) {
+                showCustomDialog("Peringatan", "Nama dan Berat harus diisi!", WARNING_COLOR);
+                return;
+            }
+
             Layanan layanan;
             if (jenis.equals("Cuci Kering")) {
                 layanan = new CuciKering(berat, Express);
@@ -144,14 +250,16 @@ public class LaundryFrame extends JFrame {
             double total = layanan.hitungTotal();
 
             if (controller.simpanTransaksi(nama, hp, alamat, jenis, berat, Express, total)) {
-                JOptionPane.showMessageDialog(this, "Berhasil! Total: Rp " + String.format("%,.0f", total));
+                String msg = "Transaksi Berhasil Disimpan!<br>Total: Rp " + String.format("%,.0f", total);
+                showCustomDialog("Sukses", msg, SUCCESS_COLOR);
+
                 controller.loadData(tableModel);
                 resetForm();
             } else {
-                JOptionPane.showMessageDialog(this, "Gagal menyimpan ke database.");
+                showCustomDialog("Error", "Gagal menyimpan ke database.", ERROR_COLOR);
             }
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Input berat harus angka!");
+            showCustomDialog("Input Salah", "Berat harus berupa angka!", ERROR_COLOR);
         }
     }
 
@@ -172,8 +280,111 @@ public class LaundryFrame extends JFrame {
 
             controller.updateStatus(id, status);
             controller.loadData(tableModel);
+
+            showCustomDialog("Status Updated", "Status cucian berhasil diperbarui.", INFO_COLOR);
         } else {
-            JOptionPane.showMessageDialog(this, "Pilih baris dulu!");
+            showCustomDialog("Pilih Data", "Klik baris transaksi pada terlebih dahulu!", WARNING_COLOR);
         }
     }
+
+    private JLabel createLabel(String text) {
+        JLabel lbl = new JLabel(text);
+        lbl.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lbl.setForeground(Color.GRAY);
+        lbl.setAlignmentX(Component.LEFT_ALIGNMENT);
+        return lbl;
+    }
+
+    private JTextField createTextField() {
+        JTextField txt = new JTextField();
+        txt.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        txt.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        txt.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(200, 200, 200)),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)
+        ));
+        txt.setAlignmentX(Component.LEFT_ALIGNMENT);
+        return txt;
+    }
+
+    private JButton createButton(String text, Color bgColor) {
+        JButton btn = new JButton(text);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btn.setBackground(bgColor);
+        btn.setForeground(Color.WHITE);
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        return btn;
+    }
+
+    private void styleTable(JTable table) {
+        table.setRowHeight(30);
+        table.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        table.setShowVerticalLines(false);
+        table.setGridColor(new Color(230, 230, 230));
+
+        //? Header Style
+        JTableHeader header = table.getTableHeader();
+        header.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        header.setBackground(Color.WHITE);
+        header.setForeground(Color.DARK_GRAY);
+        ((DefaultTableCellRenderer) header.getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);
+    }
+
+    private void showCustomDialog(String title, String message, Color themeColor) {
+        JDialog dialog = new JDialog(this, title, true);
+        dialog.setUndecorated(true);
+
+        JPanel contentPanel = new JPanel();
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+        contentPanel.setBackground(Color.WHITE);
+        // Border berwarna sesuai tipe pesan
+        contentPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(themeColor, 2),
+                new EmptyBorder(20, 20, 20, 20)
+        ));
+
+        JLabel lblTitle = new JLabel(title);
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        lblTitle.setForeground(themeColor);
+        lblTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel lblMsg = new JLabel("<html><center>" + message + "</center></html>");
+        lblMsg.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        lblMsg.setForeground(Color.DARK_GRAY);
+        lblMsg.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JButton btnOk = new JButton("Tutup");
+        // Styling tombol manual di sini jika method styleButton tidak bisa diakses
+        btnOk.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnOk.setBackground(themeColor);
+        btnOk.setForeground(Color.WHITE);
+        btnOk.setFocusPainted(false);
+        btnOk.setBorderPainted(false);
+        btnOk.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnOk.setMaximumSize(new Dimension(100, 35));
+
+        btnOk.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btnOk.addActionListener(e -> dialog.dispose());
+
+        contentPanel.add(lblTitle);
+        contentPanel.add(Box.createVerticalStrut(10));
+        contentPanel.add(lblMsg);
+        contentPanel.add(Box.createVerticalStrut(20));
+        contentPanel.add(btnOk);
+
+        dialog.add(contentPanel);
+        dialog.setSize(320, 200);
+        dialog.setLocationRelativeTo(this);
+
+        try {
+            dialog.setShape(new RoundRectangle2D.Double(0, 0, 320, 200, 15, 15));
+        } catch (Exception ignored) {
+        } // Fallback jika sistem tidak support shaping
+
+        dialog.setVisible(true);
+    }
+
 }
