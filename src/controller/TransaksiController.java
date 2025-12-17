@@ -15,6 +15,7 @@ import config.DBConnection;
 
 public class TransaksiController {
 
+    @SuppressWarnings("CallToPrintStackTrace")
     public boolean simpanTransaksi(String nama, String hp, String alamat, String jenis, double berat, boolean isExpress, double total) {
         Connection con = DBConnection.getConnection();
 
@@ -60,6 +61,7 @@ public class TransaksiController {
         }
     }
 
+    @SuppressWarnings("CallToPrintStackTrace")
     public void loadData(DefaultTableModel model) {
         model.setRowCount(0);
         String sql = "SELECT t.id_transaksi, t.tgl_masuk, p.nama_lengkap, t.jenis_layanan, t.berat_kg, t.total_biaya, t.status_cucian "
@@ -90,6 +92,7 @@ public class TransaksiController {
         }
     }
 
+    @SuppressWarnings("CallToPrintStackTrace")
     public void updateStatus(int idTransaksi, String currentStatus) {
         String nextStatus = switch (currentStatus) {
             case "Diterima" ->
@@ -113,6 +116,7 @@ public class TransaksiController {
         }
     }
 
+    @SuppressWarnings("CallToPrintStackTrace")
     public boolean deleteTransaksi(int id) {
         String sql = "DELETE FROM transaksi WHERE id_transaksi = ?";
         try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
@@ -120,11 +124,12 @@ public class TransaksiController {
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
         } catch (SQLException e) {
-            e.printStackTrace();;
+            e.printStackTrace();
             return false;
         }
     }
 
+    @SuppressWarnings("CallToPrintStackTrace")
     public double[] getStatistikHarian() {
         double[] stats = {0, 0, 0};
 
@@ -142,6 +147,7 @@ public class TransaksiController {
         return stats;
     }
 
+    @SuppressWarnings("CallToPrintStackTrace")
     public Map<String, Double> getGrafikPenjualan() {
         Map<String, Double> data = new LinkedHashMap<>();
 

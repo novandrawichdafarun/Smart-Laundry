@@ -1,13 +1,15 @@
 package controller;
 
-import config.DBConnection;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import config.DBConnection;
+
 public class AuthController {
 
+    @SuppressWarnings("CallToPrintStackTrace")
     public boolean login(String username, String password) {
         Connection con = DBConnection.getConnection();
         if (con == null) {

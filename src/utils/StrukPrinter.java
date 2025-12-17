@@ -84,6 +84,7 @@ public class StrukPrinter implements Printable {
         return PAGE_EXISTS;
     }
 
+    @SuppressWarnings("CallToPrintStackTrace")
     public void printStruk() {
         PrinterJob job = PrinterJob.getPrinterJob();
         job.setPrintable(this);
@@ -98,7 +99,5 @@ public class StrukPrinter implements Printable {
             }
         }
     }
-
-    
 
 }
