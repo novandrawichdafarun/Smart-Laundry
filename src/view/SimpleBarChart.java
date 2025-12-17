@@ -136,10 +136,11 @@ public class SimpleBarChart extends JPanel {
 		int x = padding;
 
 		FontMetrics labelFm = g2d.getFontMetrics(labelFont);
-		FontMetrics valueFm = g2d.getFontMetrics(valueFont);
+		FontMetrics valueFm;
 
 		for (Map.Entry<String, Double> entry : data.entrySet()) {
-			double val = entry.getValue() == null ? 0 : entry.getValue();
+			Double value = entry.getValue();
+			double val = value == null ? 0 : value;
 			int barHeight = (int) ((val / maxVal) * (height - 2 * padding));
 			barHeight = Math.max(0, barHeight);
 

@@ -6,13 +6,18 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
+import java.awt.image.BufferedImage;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -20,7 +25,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
-import javax.swing.SwingConstants;
 import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
 
@@ -36,7 +40,6 @@ public class LoginFrame extends JFrame {
     //? Warna Palet
     private final Color PRIMARY_COLOR = new Color(52, 152, 219); //* Biru */
     private final Color BG_COLOR = new Color(236, 240, 241); //* Abu-abu muda */ 
-    private final Color TEXT_COLOR = new Color(44, 62, 80); //* Abu-bu tua */
 
     //? Warna untuk Notifikasi
     private final Color SUCCESS_COLOR = new Color(46, 204, 113); // Hijau
@@ -55,6 +58,12 @@ public class LoginFrame extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
+        //? Logo
+        Image appIcon = appIcon("/img/Logo.png", 128, 128);
+        if (appIcon != null) {
+            setIconImage(appIcon);
+        }
+
         //? Background
         getContentPane().setBackground(BG_COLOR);
         setLayout(new BorderLayout());
@@ -70,9 +79,10 @@ public class LoginFrame extends JFrame {
                 new Color(200, 200, 200), 1),
                 new EmptyBorder(30, 40, 30, 40)));
 
-        //? Header  
-        JLabel lblIcon = new JLabel("🧺", SwingConstants.CENTER);
-        lblIcon.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 40));
+        //? Header
+        ImageIcon logoIcon = imageIcon("/img/logo.png", 100, 100);
+
+        JLabel lblIcon = new JLabel(logoIcon);
         lblIcon.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JLabel lblTitle = new JLabel("Smart Laundry");
@@ -106,11 +116,12 @@ public class LoginFrame extends JFrame {
         btnLogin.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         //? Menambahkan komponen ke panel dengan jarak (RigidArea)
+        mainPanel.add(Box.createVerticalStrut(0));
         mainPanel.add(lblIcon);
-        mainPanel.add(Box.createVerticalStrut(10));
+        mainPanel.add(Box.createVerticalStrut(0));
         mainPanel.add(lblTitle);
         mainPanel.add(lblSubtitle);
-        mainPanel.add(Box.createVerticalStrut(25));
+        mainPanel.add(Box.createVerticalStrut(15));
         mainPanel.add(lblUser);
         mainPanel.add(Box.createVerticalStrut(5));
         mainPanel.add(txtUsername);
@@ -232,6 +243,55 @@ public class LoginFrame extends JFrame {
         dialog.setShape(new RoundRectangle2D.Double(0, 0, 300, 180, 15, 15));
 
         dialog.setVisible(true);
+    }
+
+    private ImageIcon imageIcon(String path, int width, int height) {
+        try {
+            ImageIcon originalIcon = new ImageIcon(getClass().getResource(path));
+            Image srcImg = originalIcon.getImage();
+
+            BufferedImage resizedImg = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+
+            Graphics2D g2 = resizedImg.createGraphics();
+
+            // Aktifkan Anti-Aliasing dan Interpolasi kualitas tinggi
+            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            // Gambar ulang
+            g2.drawImage(srcImg, 0, 0, width, height, null);
+            g2.dispose();
+
+            return new ImageIcon(resizedImg);
+        } catch (Exception e) {
+            System.err.println("Gagal load gambar: " + path);
+            return null;
+        }
+    }
+
+    private Image appIcon(String path, int width, int height) {
+        try {
+            ImageIcon originalIcon = new ImageIcon(getClass().getResource(path));
+            Image srcImg = originalIcon.getImage();
+
+            // Buat canvas kosong dengan ukuran yang diinginkan
+            java.awt.image.BufferedImage resizedImg = new java.awt.image.BufferedImage(width, height, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+
+            // Gambar ulang dengan setting kualitas TERTINGGI
+            java.awt.Graphics2D g2 = resizedImg.createGraphics();
+            g2.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION, java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g2.setRenderingHint(java.awt.RenderingHints.KEY_RENDERING, java.awt.RenderingHints.VALUE_RENDER_QUALITY);
+            g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+
+            g2.drawImage(srcImg, 0, 0, width, height, null);
+            g2.dispose();
+
+            return resizedImg;
+        } catch (Exception e) {
+            System.err.println("Gagal load icon: " + path);
+            return null;
+        }
     }
 
 }

@@ -5,7 +5,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -39,6 +41,28 @@ public class TransaksiController {
                 idPelanggan = rs.getInt(1);
             }
 
+            //? Estimasi 
+            String sqlAntrian = "SELECT SUM(berat_kg) FROM transaksi WHERE status_cucian IN ('Diterima', 'Dicuci')";
+            Statement stmtAntrian = con.createStatement();
+            ResultSet rsAntrian = stmtAntrian.executeQuery(sqlAntrian);
+
+            double totalBeratAntrian = 0;
+            if (rsAntrian.next()) {
+                totalBeratAntrian = rsAntrian.getDouble(1);
+            }
+            double totalBebanKerja = totalBeratAntrian + berat;
+            double kecepatanMesin = 10.0;
+
+            if (isExpress) {
+                kecepatanMesin = 20.0;
+            }
+
+            double jamDiperlukan = totalBebanKerja / kecepatanMesin;
+            long menitDiperlukan = (long) (jamDiperlukan * 60);
+
+            LocalDateTime estimasiSelesai = LocalDateTime.now().plusMinutes(menitDiperlukan);
+            Timestamp estimasiTimestamp = Timestamp.valueOf(estimasiSelesai);
+
             String sqlTrans = "INSERT INTO transaksi (id_pelanggan, jenis_layanan, berat_kg, tipe_paket, total_biaya, status_cucian) VALUES (?, ?, ?, ?, ?, 'Diterima')";
             PreparedStatement psTrans = con.prepareStatement(sqlTrans);
             psTrans.setInt(1, idPelanggan);
@@ -46,6 +70,9 @@ public class TransaksiController {
             psTrans.setDouble(3, berat);
             psTrans.setString(4, isExpress ? "Express" : "Reguler");
             psTrans.setDouble(5, total);
+
+            psTrans.setTimestamp(6, estimasiTimestamp);
+
             psTrans.executeUpdate();
 
             con.commit();

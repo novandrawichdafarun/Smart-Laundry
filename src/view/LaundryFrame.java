@@ -7,12 +7,17 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Graphics2D;
 import java.awt.GridLayout;
+import java.awt.Image;
+import java.awt.RenderingHints;
 import java.awt.geom.RoundRectangle2D;
+import java.awt.image.BufferedImage;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.InputVerifier;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -59,7 +64,6 @@ public class LaundryFrame extends JFrame {
 
     //? Warna Palet
     private final Color PRIMARY_COLOR = new Color(52, 152, 219);
-    private final Color ACCENT_COLOR = new Color(41, 128, 185);
     private final Color BG_COLOR = new Color(245, 247, 250);
     private final Color PANEL_COLOR = Color.WHITE;
 
@@ -77,6 +81,7 @@ public class LaundryFrame extends JFrame {
         chartPanel.updateData(controller.getGrafikPenjualan());
     }
 
+    @SuppressWarnings("CallToPrintStackTrace")
     private void initUI() {
         // TODO Auto-generated method stub
         setTitle("Smart Laundry System - Dashboard");
@@ -86,12 +91,21 @@ public class LaundryFrame extends JFrame {
         setLayout(new BorderLayout());
         getContentPane().setBackground(BG_COLOR);
 
+        //? Logo
+        Image appIcon = appIcon("/img/Logo.png", 128, 128);
+        if (appIcon != null) {
+            setIconImage(appIcon);
+        }
+
         //? Header
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setBackground(PRIMARY_COLOR);
         headerPanel.setBorder(new EmptyBorder(15, 20, 15, 20));
 
-        JLabel lblBrand = new JLabel("Smart Laundry System");
+        ImageIcon logoIcon = imageIcon("/img/logo.png", 40, 40);
+
+        JLabel lblBrand = new JLabel("Smart Laundry System", logoIcon, JLabel.LEFT);
+        lblBrand.setIconTextGap(10);
         lblBrand.setFont(new Font("Segoe UI", Font.BOLD, 20));
         lblBrand.setForeground(Color.WHITE);
 
@@ -127,6 +141,24 @@ public class LaundryFrame extends JFrame {
 
         inputPanel.add(createLabel("No Hp:"));
         txtHp = createTextField();
+        txtHp.setInputVerifier(new InputVerifier() {
+            @Override
+            public boolean verify(JComponent input) {
+                JTextField tf = (JTextField) input;
+                String text = tf.getText().trim();
+
+                String regex = "^(08|62)\\d{8,12}$";
+
+                if (text.matches(regex)) {
+                    tf.setBorder(BorderFactory.createLineBorder(Color.GREEN));
+                    return true;
+                } else {
+                    showCustomDialog("Validasi Gagal", "Format No Hp salah!<br>Harus diawali '08' atau '62' dan berisi angka.", WARNING_COLOR);
+                    tf.setBorder(BorderFactory.createLineBorder(Color.RED));
+                    return false;
+                }
+            }
+        });
         txtHp.addKeyListener(new java.awt.event.KeyAdapter() {
             @Override
             public void keyTyped(java.awt.event.KeyEvent e) {
@@ -313,14 +345,17 @@ public class LaundryFrame extends JFrame {
 
         //? Action Listener
         txtBerat.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 hitungLive();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 hitungLive();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 hitungLive();
             }
@@ -351,14 +386,14 @@ public class LaundryFrame extends JFrame {
                 return;
             }
 
-            Layanan layanan;
-            if (jenis.equals("Cuci Basah")) {
-                layanan = new CuciBasah(berat, Express);
-            } else if (jenis.equals("Cuci Kering")) {
-                layanan = new CuciKering(berat, Express);
-            } else {
-                layanan = new Setrika(berat, Express);
-            }
+            Layanan layanan = switch (jenis) {
+                case "Cuci Basah" ->
+                    new CuciBasah(berat, Express);
+                case "Cuci Kering" ->
+                    new CuciKering(berat, Express);
+                default ->
+                    new Setrika(berat, Express);
+            };
             double total = layanan.hitungTotal();
 
             if (controller.simpanTransaksi(nama, hp, alamat, jenis, berat, Express, total)) {
@@ -655,15 +690,14 @@ public class LaundryFrame extends JFrame {
             String jenis = (String) cmbLayanan.getSelectedItem();
 
             // Gunakan logika Model yang sudah ada
-            Layanan layanan;
-            if (jenis.equals("Cuci Basah")) {
-                layanan = new CuciBasah(berat, isExpress);
-            } else if (jenis.equals("Cuci Kering")) {
-                layanan = new CuciKering(berat, isExpress);
-            } else {
-                layanan = new Setrika(berat, isExpress);
-            }
-
+            Layanan layanan = switch (jenis) {
+                case "Cuci Basah" ->
+                    new CuciBasah(berat, isExpress);
+                case "Cuci Kering" ->
+                    new CuciKering(berat, isExpress);
+                default ->
+                    new Setrika(berat, isExpress);
+            };
             double total = layanan.hitungTotal();
 
             // Update label dengan format Rupiah
@@ -672,6 +706,55 @@ public class LaundryFrame extends JFrame {
         } catch (NumberFormatException e) {
             // Jika user mengetik huruf, biarkan 0 atau abaikan
             lblTotal.setText("Total: Rp 0");
+        }
+    }
+
+    private ImageIcon imageIcon(String path, int width, int height) {
+        try {
+            ImageIcon originalIcon = new ImageIcon(getClass().getResource(path));
+            Image srcImg = originalIcon.getImage();
+
+            BufferedImage resizedImg = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+
+            Graphics2D g2 = resizedImg.createGraphics();
+
+            // Aktifkan Anti-Aliasing dan Interpolasi kualitas tinggi
+            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            // Gambar ulang
+            g2.drawImage(srcImg, 0, 0, width, height, null);
+            g2.dispose();
+
+            return new ImageIcon(resizedImg);
+        } catch (Exception e) {
+            System.err.println("Gagal load gambar: " + path);
+            return null;
+        }
+    }
+
+    private Image appIcon(String path, int width, int height) {
+        try {
+            ImageIcon originalIcon = new ImageIcon(getClass().getResource(path));
+            Image srcImg = originalIcon.getImage();
+
+            // Buat canvas kosong dengan ukuran yang diinginkan
+            java.awt.image.BufferedImage resizedImg = new java.awt.image.BufferedImage(width, height, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+
+            // Gambar ulang dengan setting kualitas TERTINGGI
+            java.awt.Graphics2D g2 = resizedImg.createGraphics();
+            g2.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION, java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g2.setRenderingHint(java.awt.RenderingHints.KEY_RENDERING, java.awt.RenderingHints.VALUE_RENDER_QUALITY);
+            g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+
+            g2.drawImage(srcImg, 0, 0, width, height, null);
+            g2.dispose();
+
+            return resizedImg;
+        } catch (Exception e) {
+            System.err.println("Gagal load icon: " + path);
+            return null;
         }
     }
 
