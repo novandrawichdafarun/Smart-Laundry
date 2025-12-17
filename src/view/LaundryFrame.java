@@ -9,8 +9,6 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.geom.RoundRectangle2D;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -79,7 +77,7 @@ public class LaundryFrame extends JFrame {
     private void initUI() {
         // TODO Auto-generated method stub
         setTitle("Smart Laundry System - Dashboard");
-        setSize(1000, 650);
+        setSize(1100, 700);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
@@ -438,7 +436,7 @@ public class LaundryFrame extends JFrame {
     }
 
     private void styleTable(JTable table) {
-        table.setRowHeight(30);
+        table.setRowHeight(35);
         table.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         table.setShowVerticalLines(false);
         table.setGridColor(new Color(230, 230, 230));
@@ -449,6 +447,48 @@ public class LaundryFrame extends JFrame {
         header.setBackground(Color.WHITE);
         header.setForeground(Color.DARK_GRAY);
         ((DefaultTableCellRenderer) header.getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);
+
+        if (table.getColumnCount() > 6) {
+            table.getColumnModel().getColumn(6).setCellRenderer(new DefaultTableCellRenderer() {
+                @Override
+                public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                    // Panggil super agar seleksi baris (warna biru saat diklik) tetap jalan
+                    super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+                    String status = (String) value;
+                    this.setHorizontalAlignment(CENTER); // Tengahkan teks
+                    this.setFont(new Font("Segoe UI", Font.BOLD, 11)); // Font sedikit lebih tebal
+
+                    // Logika Warna (Hanya ubah warna jika baris TIDAK sedang dipilih/diklik)
+                    if (!isSelected) {
+                        switch (status) {
+                            case "Diterima" -> {
+                                this.setForeground(WARNING_COLOR); // Tulisan Orange
+                                this.setBackground(new Color(255, 248, 225)); // Background Krem
+                            }
+                            case "Dicuci" -> {
+                                this.setForeground(INFO_COLOR); // Tulisan Biru
+                                this.setBackground(new Color(235, 245, 251)); // Background Biru Muda
+                            }
+                            case "Selesai" -> {
+                                this.setForeground(SUCCESS_COLOR); // Tulisan Hijau
+                                this.setBackground(new Color(233, 247, 239)); // Background Hijau Muda
+                            }
+                            case "Diambil" -> {
+                                this.setForeground(Color.GRAY); // Tulisan Abu
+                                this.setBackground(new Color(245, 245, 245)); // Background Abu Muda
+                            }
+                            default -> {
+                                this.setForeground(Color.BLACK);
+                                this.setBackground(Color.WHITE);
+                            }
+                        }
+                    }
+
+                    return this;
+                }
+            });
+        }
     }
 
     private void showCustomDialog(String title, String message, Color themeColor) {
