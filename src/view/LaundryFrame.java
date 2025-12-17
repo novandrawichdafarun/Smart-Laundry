@@ -7,7 +7,10 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridLayout;
 import java.awt.geom.RoundRectangle2D;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -34,6 +37,7 @@ import controller.TransaksiController;
 import models.CuciKering;
 import models.Layanan;
 import models.Setrika;
+import utils.StrukPrinter;
 
 public class LaundryFrame extends JFrame {
 
@@ -44,6 +48,13 @@ public class LaundryFrame extends JFrame {
     private JTable table;
     private DefaultTableModel tableModel;
     private final TransaksiController controller;
+
+    //? Stats Penjualan
+    private JLabel lblStatOmset, lblStatTransaksi, lblStatBerat;
+    private JPanel statsPanel;
+
+    //? Grafik
+    private SimpleBarChart chartPanel;
 
     //? Warna Palet
     private final Color PRIMARY_COLOR = new Color(52, 152, 219);
@@ -61,6 +72,8 @@ public class LaundryFrame extends JFrame {
         controller = new TransaksiController();
         initUI();
         controller.loadData(tableModel);
+        updateStatistik();
+        chartPanel.updateData(controller.getGrafikPenjualan());
     }
 
     private void initUI() {
@@ -193,7 +206,64 @@ public class LaundryFrame extends JFrame {
         dataPanel.setBackground(BG_COLOR);
         dataPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        String[] kolom = {"ID", "Nama", "Layanan", "Berat", "Biaya", "Status"};
+        //? Grafik 
+        JPanel chartContainer = new JPanel(new BorderLayout());
+        chartContainer.setBackground(Color.WHITE);
+        chartContainer.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(230, 230, 230)),
+                new EmptyBorder(10, 10, 10, 10)
+        ));
+
+        JLabel lblChartTitle = new JLabel("Statistik Penjualan (7 Hari Terakhir)");
+        lblChartTitle.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblChartTitle.setForeground(Color.GRAY);
+        lblChartTitle.setBorder(new EmptyBorder(0, 0, 10, 0));
+
+        chartPanel = new SimpleBarChart(controller.getGrafikPenjualan());
+
+        chartContainer.add(lblChartTitle, BorderLayout.NORTH);
+        chartContainer.add(chartPanel, BorderLayout.CENTER);
+
+        JPanel rightContent = new JPanel(new BorderLayout());
+        rightContent.setBackground(BG_COLOR);
+        rightContent.add(chartContainer, BorderLayout.NORTH);
+
+        //? Panel Statistik
+        statsPanel = new JPanel(new GridLayout(1, 3, 15, 0));
+        statsPanel.setBackground(BG_COLOR);
+        statsPanel.setBorder(new EmptyBorder(0, 0, 20, 0));
+
+        lblStatOmset = new JLabel("Rp 0");
+        lblStatTransaksi = new JLabel("0");
+        lblStatBerat = new JLabel("0 kg");
+
+        JPanel card1 = createStatCard("Pendapatan Hari Ini", "Rp 0", new Color(46, 204, 113), "$");
+        lblStatOmset = (JLabel) ((JPanel) card1.getComponent(0)).getComponent(1);
+
+        JPanel card2 = createStatCard("Total Transaksi", "0", new Color(52, 152, 219), "#");
+        lblStatTransaksi = (JLabel) ((JPanel) card2.getComponent(0)).getComponent(1);
+
+        JPanel card3 = createStatCard("Total Berat (Kg)", "0", new Color(243, 156, 18), "Kg");
+        lblStatBerat = (JLabel) ((JPanel) card3.getComponent(0)).getComponent(1);
+
+        statsPanel.add(card1);
+        statsPanel.add(card2);
+        statsPanel.add(card3);
+
+        JPanel topDataPanel = new JPanel(new BorderLayout());
+        topDataPanel.setBackground(BG_COLOR);
+        topDataPanel.add(statsPanel, BorderLayout.NORTH);
+
+        JLabel lblTableTitle = new JLabel("Riwayat Transaksi");
+        lblTableTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        lblTableTitle.setBorder(new EmptyBorder(0, 0, 10, 0));
+        topDataPanel.add(lblTableTitle, BorderLayout.SOUTH);
+
+        JPanel tableContainer = new JPanel(new BorderLayout());
+        tableContainer.setBackground(BG_COLOR);
+        tableContainer.setBorder(new EmptyBorder(20, 0, 0, 0));
+
+        String[] kolom = {"ID", "Tanggal", "Nama", "Layanan", "Berat", "Biaya", "Status"};
         tableModel = new DefaultTableModel(kolom, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -213,16 +283,30 @@ public class LaundryFrame extends JFrame {
 
         dataPanel.add(scrollPane, BorderLayout.CENTER);
 
+        tableContainer.add(new JLabel("Riwayat Transaksi"), BorderLayout.NORTH);
+        tableContainer.getComponent(0).setFont(new Font("Segoe UI", Font.BOLD, 16));
+        tableContainer.add(scrollPane, BorderLayout.CENTER);
+
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         bottomPanel.setBackground(BG_COLOR);
 
+        JButton btnPrint = createButton("Cetak Struk", new Color(52, 73, 94));
         JButton btnUpdate = createButton("Update Status Cucian", new Color(243, 156, 18)); //! Orange
         JButton btnDelete = createButton("Hapus Data", new Color(231, 76, 60)); //! Merah
 
+        tableContainer.add(bottomPanel, BorderLayout.SOUTH);
+        tableContainer.add(bottomPanel, BorderLayout.SOUTH);
+
+        bottomPanel.add(btnPrint);
         bottomPanel.add(btnUpdate);
         bottomPanel.add(btnDelete);
 
+        rightContent.add(tableContainer, BorderLayout.CENTER);
+
+        dataPanel.add(topDataPanel, BorderLayout.NORTH);
         dataPanel.add(bottomPanel, BorderLayout.SOUTH);
+
+        dataPanel.add(rightContent, BorderLayout.CENTER);
 
         add(dataPanel, BorderLayout.CENTER);
 
@@ -230,6 +314,7 @@ public class LaundryFrame extends JFrame {
         btnHitung.addActionListener(e -> prosesTransaksi());
         btnUpdate.addActionListener(e -> prosesUpdateStatus());
         btnDelete.addActionListener(e -> prosesDelete());
+        btnPrint.addActionListener(e -> prosesCetakStruk());
     }
 
     private void prosesTransaksi() {
@@ -260,6 +345,7 @@ public class LaundryFrame extends JFrame {
                 showCustomDialog("Sukses", msg, SUCCESS_COLOR);
 
                 controller.loadData(tableModel);
+                updateStatistik();
                 resetForm();
             } else {
                 showCustomDialog("Error", "Gagal menyimpan ke database.", ERROR_COLOR);
@@ -282,10 +368,11 @@ public class LaundryFrame extends JFrame {
         int baris = table.getSelectedRow();
         if (baris >= 0) {
             int id = (int) tableModel.getValueAt(baris, 0);
-            String status = (String) tableModel.getValueAt(baris, 5);
+            String status = (String) tableModel.getValueAt(baris, 6);
 
             controller.updateStatus(id, status);
             controller.loadData(tableModel);
+            updateStatistik();
 
             showCustomDialog("Status Updated", "Status cucian berhasil diperbarui.", INFO_COLOR);
         } else {
@@ -298,7 +385,7 @@ public class LaundryFrame extends JFrame {
 
         if (baris >= 0) {
             int id = (int) tableModel.getValueAt(baris, 0);
-            String nama = (String) tableModel.getValueAt(baris, 1);
+            String nama = (String) tableModel.getValueAt(baris, 2);
 
             int confirm = JOptionPane.showConfirmDialog(this,
                     "Apakah anda yakin ingin menghapus transaksi milik " + nama + "?\nData yang dihapus tidak bisa dikembalikan.",
@@ -312,7 +399,7 @@ public class LaundryFrame extends JFrame {
                 } else {
                     showCustomDialog("Gagal", "Terjadi kesalahan saat menghapus data.", ERROR_COLOR);
                 }
-            } 
+            }
         } else {
             showCustomDialog("Pilih Data", "Silahkan pilih baris data yang ingin dihapus!", WARNING_COLOR);
         }
@@ -416,6 +503,80 @@ public class LaundryFrame extends JFrame {
         } // Fallback jika sistem tidak support shaping
 
         dialog.setVisible(true);
+    }
+
+    private JPanel createStatCard(String title, String value, Color color, String iconSymbol) {
+        JPanel card = new JPanel(new BorderLayout());
+        card.setBackground(Color.WHITE);
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 4, 0, 0, color),
+                new EmptyBorder(10, 15, 10, 15)
+        ));
+
+        //? Shadow effect
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(230, 230, 230), 1),
+                card.getBorder()
+        ));
+
+        JLabel lblTitle = new JLabel(title);
+        lblTitle.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lblTitle.setForeground(Color.GRAY);
+
+        JLabel lblValue = new JLabel(value);
+        lblValue.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        lblValue.setForeground(Color.DARK_GRAY);
+
+        //? Icon simbol sederhana menggunakan teks
+        JLabel lblIcon = new JLabel(iconSymbol);
+        lblIcon.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        lblIcon.setForeground(new Color(color.getRed(), color.getGreen(), color.getBlue(), 100)); // Transparan
+
+        JPanel textPanel = new JPanel(new GridLayout(2, 1));
+        textPanel.setBackground(Color.WHITE);
+        textPanel.add(lblTitle);
+        textPanel.add(lblValue);
+
+        card.add(textPanel, BorderLayout.CENTER);
+        card.add(lblIcon, BorderLayout.EAST);
+
+        //! Set ukutan preferensi agar seragam
+        card.setPreferredSize(new Dimension(180, 70));
+
+        return card;
+    }
+
+    private void updateStatistik() {
+        double[] stats = controller.getStatistikHarian();
+        lblStatOmset.setText("Rp " + String.format("%,.0f", stats[0]));
+        lblStatTransaksi.setText(String.format("%.0f", stats[1]) + " Pesanan");
+        lblStatBerat.setText(String.format("%.1f", stats[2]) + " Kg");
+    }
+
+    private void prosesCetakStruk() {
+        int baris = table.getSelectedRow();
+
+        if (baris >= 0) {
+            int id = (int) tableModel.getValueAt(baris, 0);
+            String tanggal = (String) tableModel.getValueAt(baris, 1);
+            String nama = (String) tableModel.getValueAt(baris, 2);
+            String layanan = (String) tableModel.getValueAt(baris, 3);
+            double berat = (double) tableModel.getValueAt(baris, 4);
+            double total = (double) tableModel.getValueAt(baris, 5);
+            String status = (String) tableModel.getValueAt(baris, 6);
+
+            int confirm = JOptionPane.showConfirmDialog(this,
+                    "Cetak struk untuk transaksi #" + id + "?",
+                    "Konfirmasi Cetak",
+                    JOptionPane.YES_NO_OPTION);
+
+            if (confirm == JOptionPane.YES_OPTION) {
+                StrukPrinter printer = new StrukPrinter(id, tanggal, nama, layanan, berat, total, status);
+                printer.printStruk();
+            } else {
+                showCustomDialog("Pilih Data", "Pilih transaksi yang ingin dicetak!", WARNING_COLOR);
+            }
+        }
     }
 
 }
