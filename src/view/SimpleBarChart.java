@@ -83,7 +83,7 @@ public class SimpleBarChart extends JPanel {
 
             // Gambar Batang
             g2d.setColor(BAR_COLOR);
-            g2d.fillRoundRect(x + 10, height - padding - barHeight, barWidth - 20, barHeight, 10, 10);
+            g2d.fillRoundRect(x + 10, height - padding - barHeight, barWidth - 20, barHeight, 0, 0);
 
             // Gambar Label Tanggal (Bawah)
             g2d.setColor(Color.DARK_GRAY);

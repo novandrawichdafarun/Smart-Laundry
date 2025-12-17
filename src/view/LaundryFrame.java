@@ -32,6 +32,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 
 import controller.TransaksiController;
+import models.CuciBasah;
 import models.CuciKering;
 import models.Layanan;
 import models.Setrika;
@@ -166,7 +167,7 @@ public class LaundryFrame extends JFrame {
         inputPanel.add(Box.createVerticalStrut(10));
 
         inputPanel.add(new JLabel("Jenis Layanan:"));
-        cmbLayanan = new JComboBox<>(new String[]{"Cuci Kering", "Setrika"});
+        cmbLayanan = new JComboBox<>(new String[]{"Cuci Basah", "Cuci Kering", "Setrika"});
         cmbLayanan.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         cmbLayanan.setBackground(Color.WHITE);
         cmbLayanan.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
@@ -331,7 +332,9 @@ public class LaundryFrame extends JFrame {
             }
 
             Layanan layanan;
-            if (jenis.equals("Cuci Kering")) {
+            if (jenis.equals("Cuci Basah")) {
+                layanan = new CuciBasah(berat, Express);
+            } else if (jenis.equals("Cuci Kering")) {
                 layanan = new CuciKering(berat, Express);
             } else {
                 layanan = new Setrika(berat, Express);
@@ -613,9 +616,9 @@ public class LaundryFrame extends JFrame {
             if (confirm == JOptionPane.YES_OPTION) {
                 StrukPrinter printer = new StrukPrinter(id, tanggal, nama, layanan, berat, total, status);
                 printer.printStruk();
-            } else {
-                showCustomDialog("Pilih Data", "Pilih transaksi yang ingin dicetak!", WARNING_COLOR);
             }
+        } else {
+            showCustomDialog("Pilih Data", "Pilih transaksi yang ingin dicetak!", WARNING_COLOR);
         }
     }
 
