@@ -27,6 +27,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
@@ -310,6 +312,24 @@ public class LaundryFrame extends JFrame {
         add(dataPanel, BorderLayout.CENTER);
 
         //? Action Listener
+        txtBerat.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                hitungLive();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                hitungLive();
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                hitungLive();
+            }
+        });
+
+        cmbLayanan.addActionListener(e -> hitungLive());
+
+        chkExpress.addActionListener(e -> hitungLive());
+
         btnHitung.addActionListener(e -> prosesTransaksi());
         btnUpdate.addActionListener(e -> prosesUpdateStatus());
         btnDelete.addActionListener(e -> prosesDelete());
@@ -619,6 +639,39 @@ public class LaundryFrame extends JFrame {
             }
         } else {
             showCustomDialog("Pilih Data", "Pilih transaksi yang ingin dicetak!", WARNING_COLOR);
+        }
+    }
+
+    private void hitungLive() {
+        try {
+            // Cek jika field berat kosong, jangan error
+            if (txtBerat.getText().isEmpty()) {
+                lblTotal.setText("Total: Rp 0");
+                return;
+            }
+
+            double berat = Double.parseDouble(txtBerat.getText());
+            boolean isExpress = chkExpress.isSelected();
+            String jenis = (String) cmbLayanan.getSelectedItem();
+
+            // Gunakan logika Model yang sudah ada
+            Layanan layanan;
+            if (jenis.equals("Cuci Basah")) {
+                layanan = new CuciBasah(berat, isExpress);
+            } else if (jenis.equals("Cuci Kering")) {
+                layanan = new CuciKering(berat, isExpress);
+            } else {
+                layanan = new Setrika(berat, isExpress);
+            }
+
+            double total = layanan.hitungTotal();
+
+            // Update label dengan format Rupiah
+            lblTotal.setText("Total: Rp " + String.format("%,.0f", total));
+
+        } catch (NumberFormatException e) {
+            // Jika user mengetik huruf, biarkan 0 atau abaikan
+            lblTotal.setText("Total: Rp 0");
         }
     }
 
