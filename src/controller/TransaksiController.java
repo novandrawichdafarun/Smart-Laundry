@@ -5,9 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -40,28 +38,6 @@ public class TransaksiController {
             if (rs.next()) {
                 idPelanggan = rs.getInt(1);
             }
-
-            //? Estimasi 
-            String sqlAntrian = "SELECT SUM(berat_kg) FROM transaksi WHERE status_cucian IN ('Diterima', 'Dicuci')";
-            Statement stmtAntrian = con.createStatement();
-            ResultSet rsAntrian = stmtAntrian.executeQuery(sqlAntrian);
-
-            double totalBeratAntrian = 0;
-            if (rsAntrian.next()) {
-                totalBeratAntrian = rsAntrian.getDouble(1);
-            }
-            double totalBebanKerja = totalBeratAntrian + berat;
-            double kecepatanMesin = 10.0;
-
-            if (isExpress) {
-                kecepatanMesin = 20.0;
-            }
-
-            double jamDiperlukan = totalBebanKerja / kecepatanMesin;
-            long menitDiperlukan = (long) (jamDiperlukan * 60);
-
-            LocalDateTime estimasiSelesai = LocalDateTime.now().plusMinutes(menitDiperlukan);
-            Timestamp estimasiTimestamp = Timestamp.valueOf(estimasiSelesai);
 
             String sqlTrans = "INSERT INTO transaksi (id_pelanggan, jenis_layanan, berat_kg, tipe_paket, total_biaya, status_cucian) VALUES (?, ?, ?, ?, ?, 'Diterima')";
             PreparedStatement psTrans = con.prepareStatement(sqlTrans);
@@ -197,5 +173,44 @@ public class TransaksiController {
             e.printStackTrace();
         }
         return data;
+    }
+
+    @SuppressWarnings("CallToPrintStackTrace")
+    public void cariData(DefaultTableModel model, String keyword) {
+        model.setRowCount(0);
+
+        String sql = "SELECT t.id_transaksi, t.tgl_masuk, p.nama_lengkap, t.jenis_layanan, t.berat_kg, t.total_biaya, t.status_cucian "
+                + "FROM transaksi t JOIN pelanggan p ON t.id_pelanggan = p.id_pelanggan "
+                + "WHERE p.nama_lengkap LIKE ? OR t.id_transaksi LIKE ? "
+                + "ORDER BY t.id_transaksi DESC";
+
+        try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+
+            String searchKey = "%" + keyword + "%";
+            ps.setString(1, searchKey);
+            ps.setString(2, searchKey);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+
+                while (rs.next()) {
+                    String tanggal = "";
+                    if (rs.getTimestamp("tgl_masuk") != null) {
+                        tanggal = sdf.format(rs.getTimestamp("tgl_masuk"));
+                    }
+                    model.addRow(new Object[]{
+                        rs.getInt("id_transaksi"),
+                        tanggal,
+                        rs.getString("nama_lengkap"),
+                        rs.getString("jenis_layanan"),
+                        rs.getDouble("berat_kg"),
+                        rs.getDouble("total_biaya"),
+                        rs.getString("status_cucian")
+                    });
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }

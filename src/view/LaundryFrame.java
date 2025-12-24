@@ -29,6 +29,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
@@ -85,7 +86,7 @@ public class LaundryFrame extends JFrame {
     private void initUI() {
         // TODO Auto-generated method stub
         setTitle("Smart Laundry System - Dashboard");
-        setSize(1100, 700);
+        setSize(1200, 675);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
@@ -102,7 +103,7 @@ public class LaundryFrame extends JFrame {
         headerPanel.setBackground(PRIMARY_COLOR);
         headerPanel.setBorder(new EmptyBorder(15, 20, 15, 20));
 
-        ImageIcon logoIcon = imageIcon("/img/logo.png", 40, 40);
+        ImageIcon logoIcon = imageIcon("/img/Logo.png", 40, 40);
 
         JLabel lblBrand = new JLabel("Smart Laundry System", logoIcon, JLabel.LEFT);
         lblBrand.setIconTextGap(10);
@@ -117,260 +118,28 @@ public class LaundryFrame extends JFrame {
         headerPanel.add(lblUser, BorderLayout.EAST);
         add(headerPanel, BorderLayout.NORTH);
 
-        //? Input Panel
-        JPanel inputPanel = new JPanel();
-        inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS));
-        inputPanel.setBackground(PANEL_COLOR);
-        inputPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
-        inputPanel.setPreferredSize(new Dimension(320, 0));
-
-        //? Judul Input
-        JLabel lblInputTitle = new JLabel("Input Transaksi Baru");
-        lblInputTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        lblInputTitle.setForeground(PRIMARY_COLOR);
-        lblInputTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        inputPanel.add(lblInputTitle);
-        inputPanel.add(Box.createVerticalStrut(20));
-
-        //? Form Fields
-        inputPanel.add(createLabel("Nama Pelanggan:"));
-        txtNama = createTextField();
-        inputPanel.add(txtNama);
-        inputPanel.add(Box.createVerticalStrut(10));
-
-        inputPanel.add(createLabel("No Hp:"));
-        txtHp = createTextField();
-        txtHp.setInputVerifier(new InputVerifier() {
-            @Override
-            public boolean verify(JComponent input) {
-                JTextField tf = (JTextField) input;
-                String text = tf.getText().trim();
-
-                String regex = "^(08|62)\\d{8,12}$";
-
-                if (text.matches(regex)) {
-                    tf.setBorder(BorderFactory.createLineBorder(Color.GREEN));
-                    return true;
-                } else {
-                    showCustomDialog("Validasi Gagal", "Format No Hp salah!<br>Harus diawali '08' atau '62' dan berisi angka.", WARNING_COLOR);
-                    tf.setBorder(BorderFactory.createLineBorder(Color.RED));
-                    return false;
-                }
-            }
-        });
-        txtHp.addKeyListener(new java.awt.event.KeyAdapter() {
-            @Override
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                char c = e.getKeyChar();
-
-                //! Jika bukan angka, batalkan input (consume)
-                if (!Character.isDigit(c)) {
-                    e.consume();
-                }
-            }
-        });
-        inputPanel.add(txtHp);
-        inputPanel.add(Box.createVerticalStrut(10));
-
-        inputPanel.add(createLabel("Alamat:"));
-        txtAlamat = createTextField();
-        inputPanel.add(txtAlamat);
-        inputPanel.add(Box.createVerticalStrut(10));
-
-        inputPanel.add(createLabel("Berat (Kg):"));
-        txtBerat = createTextField();
-        txtBerat.setInputVerifier(new InputVerifier() {
-            @Override
-            public boolean verify(JComponent input) {
-                JTextField tf = (JTextField) input;
-                try {
-                    double berat = Double.parseDouble(tf.getText());
-                    if (berat <= 0) {
-                        JOptionPane.showMessageDialog(null, "Berat harus lebih dari 0!");
-                        return false;
-                    }
-                    return true;
-                } catch (NumberFormatException e) {
-                    JOptionPane.showMessageDialog(null, "Berat harus berupa angka valid!");
-                    return false;
-                }
-            }
-        });
-        inputPanel.add(txtBerat);
-        inputPanel.add(Box.createVerticalStrut(10));
-
-        inputPanel.add(new JLabel("Jenis Layanan:"));
-        cmbLayanan = new JComboBox<>(new String[]{"Cuci Basah", "Cuci Kering", "Setrika"});
-        cmbLayanan.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        cmbLayanan.setBackground(Color.WHITE);
-        cmbLayanan.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
-        cmbLayanan.setAlignmentX(Component.LEFT_ALIGNMENT);
-        inputPanel.add(cmbLayanan);
-        inputPanel.add(Box.createVerticalStrut(10));
-
-        chkExpress = new JCheckBox("Layanan Express (+5000/kg)");
-        chkExpress.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        chkExpress.setBackground(PANEL_COLOR);
-        chkExpress.setAlignmentX(Component.LEFT_ALIGNMENT);
-        inputPanel.add(chkExpress);
-        inputPanel.add(Box.createVerticalStrut(20));
-
-        //? Button & Label Total
-        JButton btnHitung = createButton("Simpan Transaksi", PRIMARY_COLOR);
-        btnHitung.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        lblTotal = new JLabel("Total: Rp 0");
-        lblTotal.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        lblTotal.setForeground(new Color(39, 174, 96)); //! Hijau
-        lblTotal.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        inputPanel.add(lblTotal);
-        inputPanel.add(Box.createVerticalStrut(10));
-        inputPanel.add(btnHitung);
-
+        // JPanel inputPanel = createInputPanel();
         //! Panel input ke ScrollPane (layar kecil)
-        JScrollPane scrollInput = new JScrollPane(inputPanel);
-        scrollInput.setBorder(null);
-        add(scrollInput, BorderLayout.WEST);
+        // JScrollPane scrollInput = new JScrollPane(inputPanel);
+        // scrollInput.setBorder(null);
+        // add(scrollInput, BorderLayout.WEST);
+        JTabbedPane tabbedPane = new JTabbedPane();
+        tabbedPane.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        tabbedPane.setBackground(Color.WHITE);
 
-        //? Data Panel
-        JPanel dataPanel = new JPanel(new BorderLayout());
-        dataPanel.setBackground(BG_COLOR);
-        dataPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        //? Dashboard Panel
+        JPanel dashboardPanel = createDashboardPanel();
+        tabbedPane.addTab("  Dashboard  ", dashboardPanel);
 
-        //? Grafik 
-        JPanel chartContainer = new JPanel(new BorderLayout());
-        chartContainer.setBackground(Color.WHITE);
-        chartContainer.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(230, 230, 230)),
-                new EmptyBorder(10, 10, 10, 10)
-        ));
+        //? Transaksi Panel
+        JPanel riwayatPanel = createRiwayatPanel();
+        tabbedPane.addTab("  Riwayat Transaksi  ", riwayatPanel);
 
-        JLabel lblChartTitle = new JLabel("Statistik Penjualan (7 Hari Terakhir)");
-        lblChartTitle.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        lblChartTitle.setForeground(Color.GRAY);
-        lblChartTitle.setBorder(new EmptyBorder(0, 0, 10, 0));
+        add(tabbedPane, BorderLayout.CENTER);
 
-        chartPanel = new SimpleBarChart(controller.getGrafikPenjualan());
-
-        chartContainer.add(lblChartTitle, BorderLayout.NORTH);
-        chartContainer.add(chartPanel, BorderLayout.CENTER);
-
-        JPanel rightContent = new JPanel(new BorderLayout());
-        rightContent.setBackground(BG_COLOR);
-        rightContent.add(chartContainer, BorderLayout.NORTH);
-
-        //? Panel Statistik
-        statsPanel = new JPanel(new GridLayout(1, 3, 15, 0));
-        statsPanel.setBackground(BG_COLOR);
-        statsPanel.setBorder(new EmptyBorder(0, 0, 20, 0));
-
-        lblStatOmset = new JLabel("Rp 0");
-        lblStatTransaksi = new JLabel("0");
-        lblStatBerat = new JLabel("0 kg");
-
-        JPanel card1 = createStatCard("Pendapatan Hari Ini", "Rp 0", new Color(46, 204, 113), "$");
-        lblStatOmset = (JLabel) ((JPanel) card1.getComponent(0)).getComponent(1);
-
-        JPanel card2 = createStatCard("Total Transaksi", "0", new Color(52, 152, 219), "#");
-        lblStatTransaksi = (JLabel) ((JPanel) card2.getComponent(0)).getComponent(1);
-
-        JPanel card3 = createStatCard("Total Berat (Kg)", "0", new Color(243, 156, 18), "Kg");
-        lblStatBerat = (JLabel) ((JPanel) card3.getComponent(0)).getComponent(1);
-
-        statsPanel.add(card1);
-        statsPanel.add(card2);
-        statsPanel.add(card3);
-
-        JPanel topDataPanel = new JPanel(new BorderLayout());
-        topDataPanel.setBackground(BG_COLOR);
-        topDataPanel.add(statsPanel, BorderLayout.NORTH);
-
-        JLabel lblTableTitle = new JLabel("Riwayat Transaksi");
-        lblTableTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        lblTableTitle.setBorder(new EmptyBorder(0, 0, 10, 0));
-        topDataPanel.add(lblTableTitle, BorderLayout.SOUTH);
-
-        JPanel tableContainer = new JPanel(new BorderLayout());
-        tableContainer.setBackground(BG_COLOR);
-        tableContainer.setBorder(new EmptyBorder(20, 0, 0, 0));
-
-        String[] kolom = {"ID", "Tanggal", "Nama", "Layanan", "Berat", "Biaya", "Status"};
-        tableModel = new DefaultTableModel(kolom, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-
-        table = new JTable(tableModel);
-        styleTable(table);
-
-        JScrollPane scrollPane = new JScrollPane(table);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder());
-        scrollPane.getViewport().setBackground(Color.WHITE);
-
-        dataPanel.add(new JLabel("Riwayat Transaksi"), BorderLayout.NORTH);
-        dataPanel.getComponent(0).setFont(new Font("Segoe UI", Font.BOLD, 16));
-
-        dataPanel.add(scrollPane, BorderLayout.CENTER);
-
-        tableContainer.add(new JLabel("Riwayat Transaksi"), BorderLayout.NORTH);
-        tableContainer.getComponent(0).setFont(new Font("Segoe UI", Font.BOLD, 16));
-        tableContainer.add(scrollPane, BorderLayout.CENTER);
-
-        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        bottomPanel.setBackground(BG_COLOR);
-
-        JButton btnPrint = createButton("Cetak Struk", new Color(52, 73, 94));
-        JButton btnUpdate = createButton("Update Status Cucian", new Color(243, 156, 18)); //! Orange
-        JButton btnDelete = createButton("Hapus Data", new Color(231, 76, 60)); //! Merah
-
-        tableContainer.add(bottomPanel, BorderLayout.SOUTH);
-        tableContainer.add(bottomPanel, BorderLayout.SOUTH);
-
-        bottomPanel.add(btnPrint);
-        bottomPanel.add(btnUpdate);
-        bottomPanel.add(btnDelete);
-
-        rightContent.add(tableContainer, BorderLayout.CENTER);
-
-        dataPanel.add(topDataPanel, BorderLayout.NORTH);
-        dataPanel.add(bottomPanel, BorderLayout.SOUTH);
-
-        dataPanel.add(rightContent, BorderLayout.CENTER);
-
-        add(dataPanel, BorderLayout.CENTER);
-
-        //? Action Listener
-        txtBerat.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                hitungLive();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                hitungLive();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                hitungLive();
-            }
-        });
-
-        cmbLayanan.addActionListener(e -> hitungLive());
-
-        chkExpress.addActionListener(e -> hitungLive());
-
-        btnHitung.addActionListener(e -> prosesTransaksi());
-        btnUpdate.addActionListener(e -> prosesUpdateStatus());
-        btnDelete.addActionListener(e -> prosesDelete());
-        btnPrint.addActionListener(e -> prosesCetakStruk());
     }
 
+    @SuppressWarnings("UseSpecificCatch")
     private void prosesTransaksi() {
         // TODO Auto-generated method stub
         try {
@@ -381,8 +150,8 @@ public class LaundryFrame extends JFrame {
             boolean Express = chkExpress.isSelected();
             String jenis = (String) cmbLayanan.getSelectedItem();
 
-            if (nama.isEmpty() || txtBerat.getText().isEmpty()) {
-                showCustomDialog("Peringatan", "Nama dan Berat harus diisi!", WARNING_COLOR);
+            if (nama.isEmpty() || txtBerat.getText().isEmpty() || alamat.isEmpty()) {
+                showCustomDialog("Peringatan", "Nama, Berat, dan Alamat harus diisi!", WARNING_COLOR);
                 return;
             }
 
@@ -406,8 +175,8 @@ public class LaundryFrame extends JFrame {
             } else {
                 showCustomDialog("Error", "Gagal menyimpan ke database.", ERROR_COLOR);
             }
-        } catch (NumberFormatException e) {
-            showCustomDialog("Input Salah", "Berat harus berupa angka!", ERROR_COLOR);
+        } catch (Exception e) {
+            showCustomDialog("Input tidak valid", "Input masih kosong atau tidak valid", ERROR_COLOR);
         }
     }
 
@@ -756,6 +525,270 @@ public class LaundryFrame extends JFrame {
             System.err.println("Gagal load icon: " + path);
             return null;
         }
+    }
+
+    private JPanel createInputPanel() {
+        JPanel inputPanel = new JPanel();
+        inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS));
+        inputPanel.setBackground(PANEL_COLOR);
+        inputPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        inputPanel.setPreferredSize(new Dimension(320, 0));
+
+        JLabel lblInputTitle = new JLabel("Input Transaksi Baru");
+        lblInputTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        lblInputTitle.setForeground(PRIMARY_COLOR);
+        lblInputTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        inputPanel.add(lblInputTitle);
+        inputPanel.add(Box.createVerticalStrut(20));
+
+        // Form Fields
+        inputPanel.add(createLabel("Nama Pelanggan:"));
+        txtNama = createTextField();
+        inputPanel.add(txtNama);
+        inputPanel.add(Box.createVerticalStrut(10));
+
+        inputPanel.add(createLabel("No Hp:"));
+        txtHp = createTextField();
+        // ... (Tambahkan logic verifier txtHp dari kode lama di sini) ...
+        txtHp.setInputVerifier(new InputVerifier() {
+            @Override
+            public boolean verify(JComponent input) {
+                JTextField tf = (JTextField) input;
+                String text = tf.getText().trim();
+                return text.matches("^(08|62)\\d{8,12}$") || text.isEmpty(); // Sederhana
+            }
+        });
+        inputPanel.add(txtHp);
+        inputPanel.add(Box.createVerticalStrut(10));
+
+        inputPanel.add(createLabel("Alamat:"));
+        txtAlamat = createTextField();
+        inputPanel.add(txtAlamat);
+        inputPanel.add(Box.createVerticalStrut(10));
+
+        inputPanel.add(createLabel("Berat (Kg):"));
+        txtBerat = createTextField();
+        inputPanel.add(txtBerat);
+        inputPanel.add(Box.createVerticalStrut(10));
+
+        inputPanel.add(new JLabel("Jenis Layanan:"));
+        cmbLayanan = new JComboBox<>(new String[]{"Cuci Basah", "Cuci Kering", "Setrika"});
+        cmbLayanan.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        cmbLayanan.setBackground(Color.WHITE);
+        cmbLayanan.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        cmbLayanan.setAlignmentX(Component.LEFT_ALIGNMENT);
+        inputPanel.add(cmbLayanan);
+        inputPanel.add(Box.createVerticalStrut(10));
+
+        chkExpress = new JCheckBox("Layanan Express (+5000/kg)");
+        chkExpress.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        chkExpress.setBackground(PANEL_COLOR);
+        chkExpress.setAlignmentX(Component.LEFT_ALIGNMENT);
+        inputPanel.add(chkExpress);
+        inputPanel.add(Box.createVerticalStrut(20));
+
+        JButton btnHitung = createButton("Simpan Transaksi", PRIMARY_COLOR);
+        btnHitung.setAlignmentX(Component.LEFT_ALIGNMENT);
+        btnHitung.addActionListener(e -> prosesTransaksi());
+
+        lblTotal = new JLabel("Total: Rp 0");
+        lblTotal.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        lblTotal.setForeground(new Color(39, 174, 96));
+        lblTotal.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        inputPanel.add(lblTotal);
+        inputPanel.add(Box.createVerticalStrut(10));
+        inputPanel.add(btnHitung);
+        initListeners();
+
+        return inputPanel;
+    }
+
+    private JPanel createDashboardPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(BG_COLOR);
+        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
+
+        // 1. Statistik Cards (Atas)
+        statsPanel = new JPanel(new GridLayout(1, 3, 20, 0)); // Gap diperlebar
+        statsPanel.setBackground(BG_COLOR);
+        statsPanel.setBorder(new EmptyBorder(0, 0, 25, 0));
+
+        // Init cards (variable lblStat... sudah dideklarasikan di class)
+        lblStatOmset = new JLabel("Rp 0");
+        lblStatTransaksi = new JLabel("0");
+        lblStatBerat = new JLabel("0 kg");
+
+        JPanel card1 = createStatCard("Pendapatan Hari Ini", "Rp 0", new Color(46, 204, 113), "$");
+        lblStatOmset = (JLabel) ((JPanel) card1.getComponent(0)).getComponent(1);
+
+        JPanel card2 = createStatCard("Total Transaksi", "0", new Color(52, 152, 219), "#");
+        lblStatTransaksi = (JLabel) ((JPanel) card2.getComponent(0)).getComponent(1);
+
+        JPanel card3 = createStatCard("Total Berat (Kg)", "0", new Color(243, 156, 18), "Kg");
+        lblStatBerat = (JLabel) ((JPanel) card3.getComponent(0)).getComponent(1);
+
+        statsPanel.add(card1);
+        statsPanel.add(card2);
+        statsPanel.add(card3);
+
+        panel.add(statsPanel, BorderLayout.NORTH);
+
+        // 2. Grafik (Tengah)
+        JPanel chartContainer = new JPanel(new BorderLayout());
+        chartContainer.setBackground(Color.WHITE);
+        chartContainer.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(230, 230, 230)),
+                new EmptyBorder(15, 15, 15, 15)
+        ));
+
+        JLabel lblChartTitle = new JLabel("Statistik Penjualan (7 Hari Terakhir)");
+        lblChartTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        lblChartTitle.setForeground(Color.DARK_GRAY);
+        lblChartTitle.setBorder(new EmptyBorder(0, 0, 15, 0));
+
+        chartPanel = new SimpleBarChart(controller.getGrafikPenjualan());
+
+        chartContainer.add(lblChartTitle, BorderLayout.NORTH);
+        chartContainer.add(chartPanel, BorderLayout.CENTER);
+
+        panel.add(chartContainer, BorderLayout.CENTER);
+
+        return panel;
+    }
+
+    private JPanel createRiwayatPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(BG_COLOR);
+        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
+
+        JPanel headerJPanel = new JPanel(new BorderLayout());
+        headerJPanel.setBackground(BG_COLOR);
+        headerJPanel.setBorder(new EmptyBorder(0, 0, 15, 0));
+
+        JLabel lblCari = new JLabel("Cari:");
+        lblCari.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+
+        JTextField txtCari = new JTextField(15);
+        txtCari.setPreferredSize(new Dimension(150, 35));
+        txtCari.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        txtCari.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(200, 200, 200)),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)
+        ));
+
+        txtCari.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyReleased(java.awt.event.KeyEvent e) {
+                String keyword = txtCari.getText();
+                controller.cariData(tableModel, keyword);
+            }
+        });
+
+        JLabel lblTitle = new JLabel("Data Transaksi Laundry");
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
+
+        JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        rightPanel.setBackground(BG_COLOR);
+
+        JButton btnTambah = createButton("+ Tambah Data", PRIMARY_COLOR);
+        btnTambah.setPreferredSize(new Dimension(140, 35));
+
+        btnTambah.addActionListener(e -> {
+            JDialog tambahDialog = new JDialog(this, "Tambah Transaksi Baru", true);
+            tambahDialog.setSize(350, 550);
+            tambahDialog.setLocationRelativeTo(this);
+
+            JPanel inputPanel = createInputPanel();
+            JScrollPane scrollPane = new JScrollPane(inputPanel);
+            scrollPane.setBorder(null);
+
+            tambahDialog.add(scrollPane);
+            tambahDialog.setVisible(true);
+        });
+
+        rightPanel.add(lblCari);
+        rightPanel.add(txtCari);
+        rightPanel.add(btnTambah);
+
+        headerJPanel.add(lblTitle, BorderLayout.WEST);
+        headerJPanel.add(rightPanel, BorderLayout.EAST);
+
+        panel.add(headerJPanel, BorderLayout.NORTH);
+
+        // Tabel
+        String[] kolom = {"ID", "Tanggal", "Nama", "Layanan", "Berat", "Biaya", "Status"};
+        tableModel = new DefaultTableModel(kolom, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
+        table = new JTable(tableModel);
+        styleTable(table); // Method styleTable dari kode lama
+
+        JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.setBorder(BorderFactory.createLineBorder(new Color(230, 230, 230)));
+        scrollPane.getViewport().setBackground(Color.WHITE);
+
+        panel.add(scrollPane, BorderLayout.CENTER);
+
+        // Tombol Aksi (Bawah)
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        bottomPanel.setBackground(BG_COLOR);
+        bottomPanel.setBorder(new EmptyBorder(15, 0, 0, 0));
+
+        JButton btnPrint = createButton("Cetak Struk", new Color(52, 73, 94));
+        JButton btnUpdate = createButton("Update Status", new Color(243, 156, 18));
+        JButton btnDelete = createButton("Hapus Data", new Color(231, 76, 60));
+
+        // Listener tombol
+        btnPrint.addActionListener(e -> prosesCetakStruk());
+        btnUpdate.addActionListener(e -> prosesUpdateStatus());
+        btnDelete.addActionListener(e -> prosesDelete());
+
+        bottomPanel.add(btnPrint);
+        bottomPanel.add(btnUpdate);
+        bottomPanel.add(btnDelete);
+
+        panel.add(bottomPanel, BorderLayout.SOUTH);
+
+        return panel;
+    }
+
+    private void initListeners() {
+        txtBerat.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                hitungLive();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                hitungLive();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                hitungLive();
+            }
+        });
+
+        cmbLayanan.addActionListener(e -> hitungLive());
+        chkExpress.addActionListener(e -> hitungLive());
+
+        // Listener tombol HP hanya angka
+        txtHp.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                char c = e.getKeyChar();
+                if (!Character.isDigit(c)) {
+                    e.consume();
+                }
+            }
+        });
     }
 
 }
