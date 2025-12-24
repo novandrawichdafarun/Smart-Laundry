@@ -71,8 +71,6 @@ public class TransaksiController {
             psTrans.setString(4, isExpress ? "Express" : "Reguler");
             psTrans.setDouble(5, total);
 
-            psTrans.setTimestamp(6, estimasiTimestamp);
-
             psTrans.executeUpdate();
 
             con.commit();
