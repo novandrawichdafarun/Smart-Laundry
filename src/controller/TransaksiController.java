@@ -12,6 +12,7 @@ import java.util.Map;
 import javax.swing.table.DefaultTableModel;
 
 import config.DBConnection;
+import utils.UserSession;
 
 public class TransaksiController {
 
@@ -39,13 +40,19 @@ public class TransaksiController {
                 idPelanggan = rs.getInt(1);
             }
 
-            String sqlTrans = "INSERT INTO transaksi (id_pelanggan, jenis_layanan, berat_kg, tipe_paket, total_biaya, status_cucian) VALUES (?, ?, ?, ?, ?, 'Diterima')";
+            String statusAwal = "Diterima";
+            if (UserSession.isPelanggan()) {
+                statusAwal = "Booking";
+            }
+
+            String sqlTrans = "INSERT INTO transaksi (id_pelanggan, jenis_layanan, berat_kg, tipe_paket, total_biaya, status_cucian) VALUES (?, ?, ?, ?, ?, ?)";
             PreparedStatement psTrans = con.prepareStatement(sqlTrans);
             psTrans.setInt(1, idPelanggan);
             psTrans.setString(2, jenis);
             psTrans.setDouble(3, berat);
             psTrans.setString(4, isExpress ? "Express" : "Reguler");
             psTrans.setDouble(5, total);
+            psTrans.setString(6, statusAwal);
 
             psTrans.executeUpdate();
 
