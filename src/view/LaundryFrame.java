@@ -84,7 +84,9 @@ public class LaundryFrame extends JFrame {
         initUI();
         controller.loadData(tableModel);
         updateStatistik();
-        chartPanel.updateData(controller.getGrafikPenjualan());
+        if (chartPanel != null) {
+            chartPanel.updateData(controller.getGrafikPenjualan());
+        }
     }
 
     @SuppressWarnings("CallToPrintStackTrace")
@@ -153,6 +155,11 @@ public class LaundryFrame extends JFrame {
     private void prosesTransaksi() {
         // TODO Auto-generated method stub
         try {
+            if (UserSession.isPelanggan()) {
+                // Pastikan pelanggan hanya bisa membuat pesanan untuk dirinya sendiri
+                String pelangganNama = UserSession.getUsername();
+                txtNama.setText(pelangganNama);
+            }
             String nama = txtNama.getText();
             String hp = txtHp.getText();
             String alamat = txtAlamat.getText();
@@ -186,6 +193,7 @@ public class LaundryFrame extends JFrame {
 
                 controller.loadData(tableModel);
                 updateStatistik();
+                chartPanel.updateData(controller.getGrafikPenjualan());
                 resetForm();
             } else {
                 showCustomDialog("Error", "Gagal menyimpan ke database.", ERROR_COLOR);
@@ -236,6 +244,8 @@ public class LaundryFrame extends JFrame {
                 if (controller.deleteTransaksi(id)) {
                     showCustomDialog("Berhasil", "Data transaksi berhasil dihapus.", SUCCESS_COLOR);
                     controller.loadData(tableModel);
+                    updateStatistik();
+                    chartPanel.updateData(controller.getGrafikPenjualan());
                 } else {
                     showCustomDialog("Gagal", "Terjadi kesalahan saat menghapus data.", ERROR_COLOR);
                 }
@@ -336,6 +346,7 @@ public class LaundryFrame extends JFrame {
     private void showCustomDialog(String title, String message, Color themeColor) {
         JDialog dialog = new JDialog(this, title, true);
         dialog.setUndecorated(true);
+        dialog.setLocationRelativeTo(this);
 
         JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
@@ -430,9 +441,15 @@ public class LaundryFrame extends JFrame {
 
     private void updateStatistik() {
         double[] stats = controller.getStatistikHarian();
-        lblStatOmset.setText("Rp " + String.format("%,.0f", stats[0]));
-        lblStatTransaksi.setText(String.format("%.0f", stats[1]) + " Pesanan");
-        lblStatBerat.setText(String.format("%.1f", stats[2]) + " Kg");
+        if (lblStatOmset != null) {
+            lblStatOmset.setText("Rp " + String.format("%,.0f", stats[0]));
+        }
+        if (lblStatTransaksi != null) {
+            lblStatTransaksi.setText(String.format("%.0f", stats[1]) + " Pesanan");
+        }
+        if (lblStatBerat != null) {
+            lblStatBerat.setText(String.format("%.1f", stats[2]) + " Kg");
+        }
     }
 
     private void prosesCetakStruk() {
@@ -558,14 +575,28 @@ public class LaundryFrame extends JFrame {
         inputPanel.add(Box.createVerticalStrut(20));
 
         // Form Fields
+        if (UserSession.isPelanggan()) {
+            JLabel lblInfo = new JLabel("<html><i>Nama pelanggan otomatis diisi sesuai akun Anda.</i></html>");
+            lblInfo.setFont(new Font("Segoe UI", Font.ITALIC, 11));
+            lblInfo.setForeground(Color.GRAY);
+            lblInfo.setAlignmentX(Component.LEFT_ALIGNMENT);
+            inputPanel.add(lblInfo);
+            inputPanel.add(Box.createVerticalStrut(10));
+        }
+
         inputPanel.add(createLabel("Nama Pelanggan:"));
         txtNama = createTextField();
+        if (UserSession.isPelanggan()) {
+            txtNama.setText(UserSession.getUsername());
+            txtNama.setEditable(false);
+            txtNama.setBackground(new Color(240, 240, 240));
+
+        }
         inputPanel.add(txtNama);
         inputPanel.add(Box.createVerticalStrut(10));
 
         inputPanel.add(createLabel("No Hp:"));
         txtHp = createTextField();
-        // ... (Tambahkan logic verifier txtHp dari kode lama di sini) ...
         txtHp.setInputVerifier(new InputVerifier() {
             @Override
             public boolean verify(JComponent input) {
@@ -777,7 +808,7 @@ public class LaundryFrame extends JFrame {
     }
 
     private JPanel createUserPanel() {
-        JPanel panel = new JPanel();
+        JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(BG_COLOR);
         panel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
@@ -788,59 +819,26 @@ public class LaundryFrame extends JFrame {
         JLabel lblTitle = new JLabel("Manajemen Pengguna");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
 
-        // Panel Form Input (Kanan)
-        JPanel formPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
-        formPanel.setBackground(BG_COLOR);
-
-        JTextField txtNewUser = new JTextField(10);
-        txtNewUser.setPreferredSize(new Dimension(120, 35));
-        txtNewUser.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        txtNewUser.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(200, 200, 200)),
-                BorderFactory.createEmptyBorder(5, 5, 5, 5)
-        ));
-
-        JTextField txtNewPass = new JTextField(10);
-        txtNewPass.setPreferredSize(new Dimension(120, 35));
-        txtNewPass.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        txtNewPass.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(200, 200, 200)),
-                BorderFactory.createEmptyBorder(5, 5, 5, 5)
-        ));
-
-        JComboBox<String> cmbRole = new JComboBox<>(new String[]{"admin", "kasir", "pelanggan"});
-        cmbRole.setPreferredSize(new Dimension(100, 35));
-        cmbRole.setBackground(Color.WHITE);
-
-        JButton btnAddUser = createButton("Tambah User", SUCCESS_COLOR);
-        btnAddUser.setPreferredSize(new Dimension(80, 35));
-
-        formPanel.add(new JLabel("User:"));
-        formPanel.add(txtNewUser);
-        formPanel.add(new JLabel("Pass:"));
-        formPanel.add(txtNewPass);
-        formPanel.add(new JLabel("Role:"));
-        formPanel.add(cmbRole);
-        formPanel.add(btnAddUser);
+        JButton btnAddUser = createButton("+ Tambah User", PRIMARY_COLOR);
+        btnAddUser.setPreferredSize(new Dimension(140, 35));
 
         headerPanel.add(lblTitle, BorderLayout.WEST);
-        headerPanel.add(formPanel, BorderLayout.EAST);
+        headerPanel.add(btnAddUser, BorderLayout.EAST);
 
         panel.add(headerPanel, BorderLayout.NORTH);
 
-        //? Tabel User
+        //? TABEL USER
         DefaultTableModel userModel = new DefaultTableModel(new String[]{"ID", "Username", "Password", "Role"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // Agar tidak bisa diedit langsung di sel
+                return false;
             }
         };
 
-        JTable userTable = new JTable(userModel);
-
-        styleTable(userTable);
-
         userController.loadData(userModel);
+
+        JTable userTable = new JTable(userModel);
+        styleTable(userTable);
 
         JScrollPane scrollPane = new JScrollPane(userTable);
         scrollPane.setBorder(BorderFactory.createLineBorder(new Color(230, 230, 230)));
@@ -848,7 +846,6 @@ public class LaundryFrame extends JFrame {
 
         panel.add(scrollPane, BorderLayout.CENTER);
 
-        //? Tombol bawah
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         bottomPanel.setBackground(BG_COLOR);
         bottomPanel.setBorder(new EmptyBorder(15, 0, 0, 0));
@@ -858,37 +855,32 @@ public class LaundryFrame extends JFrame {
 
         panel.add(bottomPanel, BorderLayout.SOUTH);
 
-        //? Listener tombol
+        //? Tombol Tambah -> Panggil Dialog Pop-up
         btnAddUser.addActionListener(e -> {
-            String u = txtNewUser.getText();
-            String p = txtNewPass.getText();
-            String r = (String) cmbRole.getSelectedItem();
-
-            if (u.isEmpty() || p.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Username & Password harus diisi!");
-                return;
-            }
-
-            if (userController.tambahUser(u, p, r)) {
-                userController.loadData(userModel);
-                JOptionPane.showMessageDialog(this, "User berhasil ditambahkan");
-                txtNewUser.setText("");
-                txtNewPass.setText("");
-            }
+            showAddUserDialog();
+            userController.loadData(userModel);
         });
 
+        //? Tombol Hapus
         btnDelUser.addActionListener(e -> {
             int row = userTable.getSelectedRow();
             if (row >= 0) {
                 int id = (int) userModel.getValueAt(row, 0);
-                int confirm = JOptionPane.showConfirmDialog(this, "Yakin hapus user ini?", "Konfirmasi", JOptionPane.YES_NO_OPTION);
+                String namaUser = (String) userModel.getValueAt(row, 1);
+
+                int confirm = JOptionPane.showConfirmDialog(this,
+                        "Yakin hapus user '" + namaUser + "'?",
+                        "Konfirmasi Hapus",
+                        JOptionPane.YES_NO_OPTION);
+
                 if (confirm == JOptionPane.YES_OPTION) {
                     if (userController.hapusUser(id)) {
                         userController.loadData(userModel);
+                        showCustomDialog("Sukses", "User berhasil dihapus.", SUCCESS_COLOR);
                     }
                 }
             } else {
-                JOptionPane.showMessageDialog(this, "Pilih user yang ingin dihapus!");
+                showCustomDialog("Peringatan", "Pilih user yang ingin dihapus!", WARNING_COLOR);
             }
         });
 
@@ -906,6 +898,61 @@ public class LaundryFrame extends JFrame {
         inputDialog.pack();
         inputDialog.setLocationRelativeTo(this); // Muncul di tengah layar
         inputDialog.setVisible(true);
+    }
+
+    private void showAddUserDialog() {
+        JDialog dialog = new JDialog(this, "Tambah Pengguna Baru", true);
+        dialog.setSize(350, 320);
+        dialog.setLayout(new BorderLayout());
+        dialog.setLocationRelativeTo(this);
+
+        JPanel formPanel = new JPanel();
+        formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));
+        formPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        formPanel.setBackground(Color.WHITE);
+
+        formPanel.add(createLabel("Username: "));
+        JTextField txtUsername = createTextField();
+        formPanel.add(txtUsername);
+        formPanel.add(Box.createVerticalStrut(10));
+
+        formPanel.add(createLabel("Password: "));
+        JTextField txtPassword = createTextField();
+        formPanel.add(txtPassword);
+        formPanel.add(Box.createVerticalStrut(10));
+
+        formPanel.add(createLabel("Role: "));
+        JComboBox<String> cmbRole = new JComboBox<>(new String[]{"admin", "kasir", "pelanggan"});
+        cmbRole.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        cmbRole.setBackground(Color.WHITE);
+        cmbRole.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        cmbRole.setAlignmentX(Component.LEFT_ALIGNMENT);
+        formPanel.add(cmbRole);
+        formPanel.add(Box.createVerticalStrut(20));
+
+        JButton btnSave = createButton("Simpan Pengguna", PRIMARY_COLOR);
+        btnSave.setAlignmentX(Component.LEFT_ALIGNMENT);
+        btnSave.addActionListener(e -> {
+            String username = txtUsername.getText().trim();
+            String password = txtPassword.getText().trim();
+            String role = (String) cmbRole.getSelectedItem();
+
+            if (username.isEmpty() || password.isEmpty()) {
+                showCustomDialog("Input Tidak Valid", "Username dan Password tidak boleh kosong.", ERROR_COLOR);
+                return;
+            }
+
+            if (userController.tambahUser(username, password, role)) {
+                showCustomDialog("Berhasil", "Pengguna baru berhasil ditambahkan.", SUCCESS_COLOR);
+                dialog.dispose();
+            } else {
+                showCustomDialog("Gagal", "Terjadi kesalahan saat menambahkan pengguna.", ERROR_COLOR);
+            }
+        });
+
+        formPanel.add(btnSave);
+        dialog.add(formPanel, BorderLayout.CENTER);
+        dialog.setVisible(true);
     }
 
     private void initListeners() {
