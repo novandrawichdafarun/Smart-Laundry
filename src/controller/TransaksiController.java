@@ -112,6 +112,8 @@ public class TransaksiController {
     @SuppressWarnings("CallToPrintStackTrace")
     public void updateStatus(int idTransaksi, String currentStatus) {
         String nextStatus = switch (currentStatus) {
+            case "Menunggu" ->
+                "Diterima";
             case "Diterima" ->
                 "Dicuci";
             case "Dicuci" ->
