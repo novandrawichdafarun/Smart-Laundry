@@ -15,7 +15,8 @@ CREATE TABLE IF NOT EXISTS pelanggan (
 CREATE TABLE IF NOT EXISTS transaksi (
     id_transaksi INT AUTO_INCREMENT PRIMARY KEY,
     id_pelanggan INT,
-    jenis_layanan VARCHAR(50), -- Cuci Kering / Setrika
+    id_user INT(11),
+    jenis_layanan VARCHAR(50), -- Cuci Basah / Cuci Kering / Setrika
     berat_kg DOUBLE,
     tipe_paket VARCHAR(20), -- Reguler / Express
     total_biaya DOUBLE,
@@ -36,4 +37,4 @@ CREATE TABLE IF NOT EXISTS users (
 -- Insert contoh data
 INSERT INTO users (username, password, role) VALUES ('admin', 'admin123', 'super_admin');
 INSERT INTO users (username, password, role) VALUES ('kasir', 'kasir123', 'kasir');
-INSERT INTO users (username, password, role) VALUES ('vandra', 'vandra123', 'pelanggan');
+INSERT INTO users (username, password, role) VALUES ('pelanggan', 'pelanggan123', 'pelanggan');

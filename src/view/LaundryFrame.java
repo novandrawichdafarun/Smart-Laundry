@@ -219,13 +219,18 @@ public class LaundryFrame extends JFrame {
 
                 controller.loadData(tableModel);
                 updateStatistik();
-                chartPanel.updateData(controller.getGrafikPenjualan());
+                if (chartPanel != null) {
+                    chartPanel.updateData(controller.getGrafikPenjualan());
+                }
                 resetForm();
             } else {
                 showCustomDialog("Error", "Gagal menyimpan ke database.", ERROR_COLOR);
             }
+        } catch (NumberFormatException e) {
+            showCustomDialog("Error", "Berat harus berupa angka valid.", ERROR_COLOR);
         } catch (Exception e) {
-            showCustomDialog("Input tidak valid", "Input masih kosong atau tidak valid", ERROR_COLOR);
+            e.printStackTrace();
+            showCustomDialog("Error", "Terjadi kesalahan: " + e.getMessage(), ERROR_COLOR);
         }
     }
 
@@ -242,7 +247,7 @@ public class LaundryFrame extends JFrame {
         int baris = table.getSelectedRow();
         if (baris >= 0) {
             int id = (int) tableModel.getValueAt(baris, 0);
-            String status = (String) tableModel.getValueAt(baris, 6);
+            String status = (String) tableModel.getValueAt(baris, 7);
 
             controller.updateStatus(id, status);
             controller.loadData(tableModel);
@@ -254,19 +259,28 @@ public class LaundryFrame extends JFrame {
         }
     }
 
+    @SuppressWarnings("CallToPrintStackTrace")
     private void prosesUpdateData() {
-        int row = table.getSelectedRow();
-        if (row >= 0) {
-            int id = (int) tableModel.getValueAt(row, 0);
-            String nama = (String) tableModel.getValueAt(row, 2);
-            String layanan = (String) tableModel.getValueAt(row, 3);
-            double berat = (double) tableModel.getValueAt(row, 4);
-            boolean isExpress = "Express".equals(tableModel.getValueAt(row, 5));
-            String status = (String) tableModel.getValueAt(row, 6);
+        try {
+            int row = table.getSelectedRow();
+            if (row >= 0) {
+                int id = Integer.parseInt(tableModel.getValueAt(row, 0).toString());
+                String nama = tableModel.getValueAt(row, 2).toString();
+                String layanan = tableModel.getValueAt(row, 3).toString();
+                double berat = Double.parseDouble(tableModel.getValueAt(row, 4).toString());
 
-            showEditTransaksiDialog(id, nama, layanan, berat, status, isExpress);
-        } else {
-            showCustomDialog("Peringatan", "Pilih transaksi yang ingin diedit!", WARNING_COLOR);
+                String tipePaket = tableModel.getValueAt(row, 5).toString();
+                boolean isExpress = "Express".equalsIgnoreCase(tipePaket);
+
+                String status = tableModel.getValueAt(row, 7).toString();
+
+                showEditTransaksiDialog(id, nama, layanan, berat, status, isExpress);
+            } else {
+                showCustomDialog("Peringatan", "Pilih transaksi yang ingin diedit!", WARNING_COLOR);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            showCustomDialog("Error", "Gagal membuka dialog update: " + e.getMessage(), ERROR_COLOR);
         }
     }
 
@@ -342,18 +356,20 @@ public class LaundryFrame extends JFrame {
         header.setForeground(Color.DARK_GRAY);
         ((DefaultTableCellRenderer) header.getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);
 
-        if (table.getColumnCount() > 6) {
-            table.getColumnModel().getColumn(6).setCellRenderer(new DefaultTableCellRenderer() {
+        if (table.getColumnCount() > 7) {
+            table.getColumnModel().getColumn(7).setCellRenderer(new DefaultTableCellRenderer() {
                 @Override
                 public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                    // Panggil super agar seleksi baris (warna biru saat diklik) tetap jalan
                     super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-                    String status = (String) value;
-                    this.setHorizontalAlignment(CENTER); // Tengahkan teks
-                    this.setFont(new Font("Segoe UI", Font.BOLD, 11)); // Font sedikit lebih tebal
+                    if (value == null) {
+                        return this;
+                    }
 
-                    // Logika Warna (Hanya ubah warna jika baris TIDAK sedang dipilih/diklik)
+                    String status = (String) value;
+                    this.setHorizontalAlignment(CENTER);
+                    this.setFont(new Font("Segoe UI", Font.BOLD, 11));
+
                     if (!isSelected) {
                         switch (status) {
                             case "Diterima" -> {
@@ -503,8 +519,8 @@ public class LaundryFrame extends JFrame {
             String nama = (String) tableModel.getValueAt(baris, 2);
             String layanan = (String) tableModel.getValueAt(baris, 3);
             double berat = (double) tableModel.getValueAt(baris, 4);
-            double total = (double) tableModel.getValueAt(baris, 5);
-            String status = (String) tableModel.getValueAt(baris, 6);
+            double total = (double) tableModel.getValueAt(baris, 6);
+            String status = (String) tableModel.getValueAt(baris, 7);
 
             int confirm = JOptionPane.showConfirmDialog(this,
                     "Cetak struk untuk transaksi #" + id + "?",
@@ -520,6 +536,7 @@ public class LaundryFrame extends JFrame {
         }
     }
 
+    @SuppressWarnings("CallToPrintStackTrace")
     private void hitungLive() {
         try {
             // Cek jika field berat kosong, jangan error
@@ -549,6 +566,8 @@ public class LaundryFrame extends JFrame {
         } catch (NumberFormatException e) {
             // Jika user mengetik huruf, biarkan 0 atau abaikan
             lblTotal.setText("Total: Rp 0");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -805,7 +824,7 @@ public class LaundryFrame extends JFrame {
         panel.add(headerJPanel, BorderLayout.NORTH);
 
         // Tabel
-        String[] kolom = {"ID", "Tanggal", "Nama", "Layanan", "Berat", "Biaya", "Status"};
+        String[] kolom = {"ID", "Tanggal", "Nama", "Layanan", "Berat", "Tipe", "Biaya", "Status"};
         tableModel = new DefaultTableModel(kolom, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -872,7 +891,7 @@ public class LaundryFrame extends JFrame {
 
         panel.add(headerPanel, BorderLayout.NORTH);
 
-        //? TABEL USER
+        //? USER
         DefaultTableModel userModel = new DefaultTableModel(new String[]{"ID", "Username", "Password", "Role"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -985,7 +1004,7 @@ public class LaundryFrame extends JFrame {
         formPanel.add(Box.createVerticalStrut(10));
 
         formPanel.add(createLabel("Role: "));
-        JComboBox<String> cmbRole = new JComboBox<>(new String[]{"admin", "kasir", "pelanggan"});
+        JComboBox<String> cmbRole = new JComboBox<>(new String[]{"pelanggan", "kasir"});
         cmbRole.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         cmbRole.setBackground(Color.WHITE);
         cmbRole.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
@@ -1072,7 +1091,7 @@ public class LaundryFrame extends JFrame {
         JTextField txtPassword = createTextField();
         txtPassword.setText(currentPass);
 
-        JComboBox<String> cmbRole = new JComboBox<>(new String[]{"admin", "kasir", "pelanggan"});
+        JComboBox<String> cmbRole = new JComboBox<>(new String[]{"pelanggan", "kasir"});
         cmbRole.setSelectedItem(currentRole);
         cmbRole.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         cmbRole.setBackground(Color.WHITE);

@@ -32,6 +32,13 @@ public class UserController {
     }
 
     public boolean tambahUser(String user, String pass, String role) {
+        if ("super_admin".equalsIgnoreCase(role)) {
+            if (isSuperAdminExists()) {
+                System.out.println("Gagal: Super Admin hanya boleh satu.");
+                return false;
+            }
+        }
+
         String sql = "INSERT INTO users (username, password, role) VALUES (?, ?, ?)";
 
         try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
@@ -66,5 +73,17 @@ public class UserController {
         } catch (SQLException e) {
             return false;
         }
+    }
+
+    public boolean isSuperAdminExists() {
+        String sql = "SELECT COUNT(*) FROM users WHERE role = 'super_admin'";
+        try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            return false;
+        }
+        return false;
     }
 }

@@ -42,17 +42,18 @@ public class TransaksiController {
 
             String statusAwal = "Diterima";
             if (UserSession.isPelanggan()) {
-                statusAwal = "Booking";
+                statusAwal = "Menunggu";
             }
 
-            String sqlTrans = "INSERT INTO transaksi (id_pelanggan, jenis_layanan, berat_kg, tipe_paket, total_biaya, status_cucian) VALUES (?, ?, ?, ?, ?, ?)";
+            String sqlTrans = "INSERT INTO transaksi (id_pelanggan, id_user, jenis_layanan, berat_kg, tipe_paket, total_biaya, status_cucian) VALUES (?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement psTrans = con.prepareStatement(sqlTrans);
             psTrans.setInt(1, idPelanggan);
-            psTrans.setString(2, jenis);
-            psTrans.setDouble(3, berat);
-            psTrans.setString(4, isExpress ? "Express" : "Reguler");
-            psTrans.setDouble(5, total);
-            psTrans.setString(6, statusAwal);
+            psTrans.setInt(2, UserSession.getId());
+            psTrans.setString(3, jenis);
+            psTrans.setDouble(4, berat);
+            psTrans.setString(5, isExpress ? "Express" : "Reguler");
+            psTrans.setDouble(6, total);
+            psTrans.setString(7, statusAwal);
 
             psTrans.executeUpdate();
 
@@ -72,8 +73,15 @@ public class TransaksiController {
     @SuppressWarnings("CallToPrintStackTrace")
     public void loadData(DefaultTableModel model) {
         model.setRowCount(0);
-        String sql = "SELECT t.id_transaksi, t.tgl_masuk, p.nama_lengkap, t.jenis_layanan, t.berat_kg, t.total_biaya, t.status_cucian "
-                + "FROM transaksi t JOIN pelanggan p ON t.id_pelanggan = p.id_pelanggan ORDER BY t.id_transaksi DESC";
+
+        String sql = "SELECT t.id_transaksi, t.tgl_masuk, p.nama_lengkap, t.jenis_layanan, t.berat_kg, t.tipe_paket, t.total_biaya, t.status_cucian "
+                + "FROM transaksi t JOIN pelanggan p ON t.id_pelanggan = p.id_pelanggan ";
+
+        if (UserSession.isPelanggan()) {
+            sql += "WHERE t.id_user = " + UserSession.getId() + " ";
+        }
+
+        sql += "ORDER BY t.id_transaksi DESC";
 
         try (Connection conn = DBConnection.getConnection(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
 
@@ -86,13 +94,14 @@ public class TransaksiController {
                     tanggal = sdf.format(rs.getTimestamp("tgl_masuk"));
                 }
                 model.addRow(new Object[]{
-                    rs.getInt("id_transaksi"),
-                    tanggal,
-                    rs.getString("nama_lengkap"),
-                    rs.getString("jenis_layanan"),
-                    rs.getDouble("berat_kg"),
-                    rs.getDouble("total_biaya"),
-                    rs.getString("status_cucian")
+                    rs.getInt("id_transaksi"), // 0
+                    tanggal, // 1
+                    rs.getString("nama_lengkap"), // 2
+                    rs.getString("jenis_layanan"), // 3
+                    rs.getDouble("berat_kg"), // 4
+                    rs.getString("tipe_paket"), // 5
+                    rs.getDouble("total_biaya"), // 6
+                    rs.getString("status_cucian") // 7
                 });
             }
         } catch (SQLException e) {
@@ -127,7 +136,7 @@ public class TransaksiController {
     @SuppressWarnings("CallToPrintStackTrace")
     public boolean updateDataTransaksi(int id, String nama, String layanan, double berat, boolean isExpress, String status, double total) {
         String sql = "UPDATE transaksi t JOIN pelanggan p ON t.id_pelanggan = p.id_pelanggan "
-                + "SET p.nama_lengkap=?, t.jenis_layanan=?, t.berat_kg=?, t.total_biaya=?, t.express=?, t.status_cucian=? "
+                + "SET p.nama_lengkap=?, t.jenis_layanan=?, t.berat_kg=?, t.total_biaya=?, t.tipe_paket=?, t.status_cucian=? "
                 + "WHERE t.id_transaksi=?";
 
         try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
