@@ -44,6 +44,20 @@ public class UserController {
         }
     }
 
+    public boolean editUser(int id, String user, String pass, String role) {
+        String sql = "UPDATE users SET username = ?, password = ?, role = ? WHERE id_user = ?";
+
+        try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, user);
+            ps.setString(2, pass);
+            ps.setString(3, role);
+            ps.setInt(4, id);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            return false;
+        }
+    }
+
     public boolean hapusUser(int id) {
         String sql = "DELETE FROM users WHERE id_user = ?";
         try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {

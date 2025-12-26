@@ -117,12 +117,39 @@ public class LaundryFrame extends JFrame {
         lblBrand.setFont(new Font("Segoe UI", Font.BOLD, 20));
         lblBrand.setForeground(Color.WHITE);
 
+        JPanel profilePanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        profilePanel.setOpaque(false);
+
         JLabel lblUser = new JLabel("Halo, " + UserSession.getUsername() + " (" + UserSession.getRole() + ")");
         lblUser.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         lblUser.setForeground(new Color(230, 230, 230));
 
+        JButton btnLogout = new JButton("Logout");
+        btnLogout.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnLogout.setBackground(new Color(231, 76, 60));
+        btnLogout.setForeground(Color.WHITE);
+        btnLogout.setFocusPainted(false);
+        btnLogout.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
+        btnLogout.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        btnLogout.addActionListener(e -> {
+            int confirm = JOptionPane.showConfirmDialog(this,
+                    "Apakah Anda yakin ingin logout?",
+                    "Konfirmasi Logout",
+                    JOptionPane.YES_NO_OPTION);
+            if (confirm == JOptionPane.YES_OPTION) {
+                UserSession.logout();
+                this.dispose();
+                new LoginFrame().setVisible(true);
+            }
+        });
+
+        profilePanel.add(lblUser);
+        profilePanel.add(btnLogout);
+
         headerPanel.add(lblBrand, BorderLayout.WEST);
-        headerPanel.add(lblUser, BorderLayout.EAST);
+        headerPanel.add(profilePanel, BorderLayout.EAST);
+
         add(headerPanel, BorderLayout.NORTH);
 
         // ! Tabbe Panel
@@ -148,7 +175,6 @@ public class LaundryFrame extends JFrame {
         add(tabbedPane, BorderLayout.CENTER);
 
         initListeners();
-
     }
 
     @SuppressWarnings("UseSpecificCatch")
@@ -225,6 +251,22 @@ public class LaundryFrame extends JFrame {
             showCustomDialog("Status Updated", "Status cucian berhasil diperbarui.", INFO_COLOR);
         } else {
             showCustomDialog("Pilih Data", "Klik baris transaksi pada terlebih dahulu!", WARNING_COLOR);
+        }
+    }
+
+    private void prosesUpdateData() {
+        int row = table.getSelectedRow();
+        if (row >= 0) {
+            int id = (int) tableModel.getValueAt(row, 0);
+            String nama = (String) tableModel.getValueAt(row, 2);
+            String layanan = (String) tableModel.getValueAt(row, 3);
+            double berat = (double) tableModel.getValueAt(row, 4);
+            boolean isExpress = "Express".equals(tableModel.getValueAt(row, 5));
+            String status = (String) tableModel.getValueAt(row, 6);
+
+            showEditTransaksiDialog(id, nama, layanan, berat, status, isExpress);
+        } else {
+            showCustomDialog("Peringatan", "Pilih transaksi yang ingin diedit!", WARNING_COLOR);
         }
     }
 
@@ -793,9 +835,12 @@ public class LaundryFrame extends JFrame {
         // Listener tombol
         btnPrint.addActionListener(e -> prosesCetakStruk());
         btnUpdateStatus.addActionListener(e -> prosesUpdateStatus());
+        btnUpdateData.addActionListener(e -> prosesUpdateData());
         btnDelete.addActionListener(e -> prosesDelete());
 
         if (UserSession.isSuperAdmin()) {
+            bottomPanel.add(btnPrint);
+            bottomPanel.add(btnUpdateStatus);
             bottomPanel.add(btnUpdateData);
             bottomPanel.add(btnDelete);
         } else if (UserSession.isKasir()) {
@@ -850,7 +895,10 @@ public class LaundryFrame extends JFrame {
         bottomPanel.setBackground(BG_COLOR);
         bottomPanel.setBorder(new EmptyBorder(15, 0, 0, 0));
 
+        JButton btnEditUser = createButton("Edit User Terpilih", INFO_COLOR);
         JButton btnDelUser = createButton("Hapus User Terpilih", ERROR_COLOR);
+
+        bottomPanel.add(btnEditUser);
         bottomPanel.add(btnDelUser);
 
         panel.add(bottomPanel, BorderLayout.SOUTH);
@@ -859,6 +907,21 @@ public class LaundryFrame extends JFrame {
         btnAddUser.addActionListener(e -> {
             showAddUserDialog();
             userController.loadData(userModel);
+        });
+
+        //? Tombol Edit
+        btnEditUser.addActionListener(e -> {
+            int row = userTable.getSelectedRow();
+            if (row >= 0) {
+                int id = (int) userModel.getValueAt(row, 0);
+                String user = (String) userModel.getValueAt(row, 1);
+                String pass = (String) userModel.getValueAt(row, 2);
+                String role = (String) userModel.getValueAt(row, 3);
+
+                showEditUserDialog(id, user, pass, role, userModel);
+            } else {
+                showCustomDialog("Peringatan", "Pilih user yang ingin diedit!", WARNING_COLOR);
+            }
         });
 
         //? Tombol Hapus
@@ -991,6 +1054,209 @@ public class LaundryFrame extends JFrame {
                 }
             }
         });
+    }
+
+    private void showEditUserDialog(int id, String currentUser, String currentPass, String currentRole, DefaultTableModel model) {
+        JDialog dialog = new JDialog(this, "Edit Pengguna", true);
+        dialog.setSize(350, 320);
+        dialog.setLocationRelativeTo(this);
+
+        JPanel formPanel = new JPanel();
+        formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));
+        formPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        formPanel.setBackground(Color.WHITE);
+
+        JTextField txtUsername = createTextField();
+        txtUsername.setText(currentUser);
+
+        JTextField txtPassword = createTextField();
+        txtPassword.setText(currentPass);
+
+        JComboBox<String> cmbRole = new JComboBox<>(new String[]{"admin", "kasir", "pelanggan"});
+        cmbRole.setSelectedItem(currentRole);
+        cmbRole.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        cmbRole.setBackground(Color.WHITE);
+        cmbRole.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        cmbRole.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JButton btnSimpan = createButton("Simpan Perubahan", WARNING_COLOR);
+
+        formPanel.add(new JLabel("Username:"));
+        formPanel.add(txtUsername);
+        formPanel.add(Box.createVerticalStrut(10));
+        formPanel.add(new JLabel("Password:"));
+        formPanel.add(txtPassword);
+        formPanel.add(Box.createVerticalStrut(10));
+        formPanel.add(new JLabel("Role:"));
+        formPanel.add(cmbRole);
+        formPanel.add(Box.createVerticalStrut(20));
+        formPanel.add(btnSimpan);
+
+        btnSimpan.addActionListener(e -> {
+            if (userController.editUser(id, txtUsername.getText(), txtPassword.getText(), (String) cmbRole.getSelectedItem())) {
+                userController.loadData(model);
+                JOptionPane.showMessageDialog(dialog, "Data User berhasil diupdate!");
+                dialog.dispose();
+            } else {
+                JOptionPane.showMessageDialog(dialog, "Gagal update user.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        dialog.add(formPanel, BorderLayout.CENTER);
+        dialog.setVisible(true);
+    }
+
+    private void showEditTransaksiDialog(int id, String namaLama, String layLama, double beratLama, String statusLama, boolean isExpressLama) {
+        JDialog dialog = new JDialog(this, "Edit Data Transaksi", true);
+        dialog.setSize(350, 450);
+        dialog.setLayout(new BorderLayout());
+        dialog.setLocationRelativeTo(this);
+
+        JPanel formPanel = new JPanel();
+        formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));
+        formPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        formPanel.setBackground(Color.WHITE);
+
+        JTextField txtNama = createTextField();
+        txtNama.setText(namaLama);
+
+        JTextField txtBerat = createTextField();
+        txtBerat.setText(String.valueOf(beratLama));
+
+        JComboBox<String> cmbLayanan = new JComboBox<>(new String[]{"Cuci Basah", "Cuci Kering", "Setrika"});
+        cmbLayanan.setSelectedItem(layLama);
+        cmbLayanan.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        cmbLayanan.setBackground(Color.WHITE);
+        cmbLayanan.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        cmbLayanan.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JLabel lblTotalBaru = new JLabel("Total Baru: -");
+        lblTotalBaru.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblTotalBaru.setForeground(SUCCESS_COLOR);
+        lblTotalBaru.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        // status
+        JComboBox<String> cmbStatus = new JComboBox<>(new String[]{"Pending", "Proses", "Selesai", "Diambil"});
+        cmbStatus.setSelectedItem(statusLama);
+        cmbStatus.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        cmbStatus.setBackground(Color.WHITE);
+        cmbStatus.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        cmbStatus.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JCheckBox chkExpress = new JCheckBox("Layanan Express (+5000/kg)");
+        chkExpress.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        chkExpress.setSelected(isExpressLama);
+        chkExpress.setBackground(Color.WHITE);
+        chkExpress.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JButton btnSimpan = createButton("Simpan Perubahan", WARNING_COLOR);
+
+        Runnable hitungUlang = () -> {
+            try {
+                double berat = Double.parseDouble(txtBerat.getText());
+                String layanan = (String) cmbLayanan.getSelectedItem();
+                double harga = 0;
+
+                // Hitung manual sederhana untuk dialog ini
+                switch (layanan) {
+                    case "Cuci Basah":
+                        harga = berat * 3000;
+                        break;
+                    case "Cuci Kering":
+                        harga = berat * 4000;
+                        break;
+                    case "Setrika":
+                        harga = berat * 3500;
+                        break;
+                }
+                lblTotalBaru.setText("Total Baru: Rp " + String.format("%,.0f", harga));
+                btnSimpan.putClientProperty("total_fix", harga);
+            } catch (NumberFormatException ex) {
+                lblTotalBaru.setText("Total Baru: Input Salah");
+            }
+        };
+
+        txtBerat.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                hitungUlang.run();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                hitungUlang.run();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                hitungUlang.run();
+            }
+        });
+        cmbLayanan.addActionListener(e -> hitungUlang.run());
+
+        hitungUlang.run();
+
+        formPanel.add(createLabel("Nama Pelanggan:"));
+        formPanel.add(txtNama);
+        formPanel.add(Box.createVerticalStrut(10));
+        formPanel.add(createLabel("Berat (Kg):"));
+        formPanel.add(txtBerat);
+        formPanel.add(Box.createVerticalStrut(10));
+        formPanel.add(new JLabel("Jenis Layanan:"));
+        formPanel.add(cmbLayanan);
+        formPanel.add(Box.createVerticalStrut(10));
+        formPanel.add(chkExpress);
+        formPanel.add(Box.createVerticalStrut(10));
+        formPanel.add(createLabel("Status Transaksi:"));
+        formPanel.add(cmbStatus);
+        formPanel.add(Box.createVerticalStrut(20));
+        formPanel.add(lblTotalBaru);
+        formPanel.add(Box.createVerticalStrut(10));
+        formPanel.add(btnSimpan);
+
+        btnSimpan.addActionListener(e -> {
+            String namaBaru = txtNama.getText().trim();
+            String layBaru = (String) cmbLayanan.getSelectedItem();
+            String statusBaru = (String) cmbStatus.getSelectedItem();
+            boolean isExpressBaru = chkExpress.isSelected();
+
+            if (txtBerat.getText().isEmpty()) {
+                lblTotalBaru.setText("Total: Rp 0");
+                return;
+            }
+
+            double beratBaru;
+            try {
+                beratBaru = Double.parseDouble(txtBerat.getText().trim());
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(dialog, "Berat harus berupa angka.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Hitung total baru
+            Layanan layanan = switch (layBaru) {
+                case "Cuci Basah" ->
+                    new CuciBasah(beratBaru, isExpressBaru);
+                case "Cuci Kering" ->
+                    new CuciKering(beratBaru, isExpressBaru);
+                default ->
+                    new Setrika(beratBaru, isExpressBaru);
+            };
+            double totalBaru = layanan.hitungTotal();
+            lblTotalBaru.setText("Total Baru: Rp " + String.format("%,.0f", totalBaru));
+
+            // Simpan perubahan
+            if (controller.updateDataTransaksi(id, namaBaru, layLama, beratBaru, isExpressBaru, statusBaru, totalBaru)) {
+                controller.loadData(tableModel);
+                updateStatistik();
+                chartPanel.updateData(controller.getGrafikPenjualan());
+                JOptionPane.showMessageDialog(dialog, "Data transaksi berhasil diupdate!");
+                dialog.dispose();
+            } else {
+                JOptionPane.showMessageDialog(dialog, "Gagal update data transaksi.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
     }
 
 }

@@ -1,18 +1,11 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
 package view;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.RenderingHints;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.geom.RoundRectangle2D;
-import java.awt.image.BufferedImage;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -22,21 +15,31 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
-import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
+
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.geom.RoundRectangle2D;
+import java.awt.image.BufferedImage;
 
 import controller.AuthController;
 
-public class LoginFrame extends JFrame {
+public class RegisterFrame extends JFrame {
 
     private JTextField txtUsername;
-    private JPasswordField txtPassword;
-    private JButton btnLogin;
-    private final AuthController authController;
+    private JTextField txtPassword;
+    private JButton btnRegister;
+    private AuthController authController;
 
     //? Warna Palet
     private final Color PRIMARY_COLOR = new Color(52, 152, 219); //* Biru */
@@ -47,14 +50,12 @@ public class LoginFrame extends JFrame {
     private final Color ERROR_COLOR = new Color(231, 76, 60);    // Merah
     private final Color WARNING_COLOR = new Color(243, 156, 18); // Oranye
 
-    public LoginFrame() {
-        authController = new AuthController();
+    public RegisterFrame() {
         initUI();
     }
 
     private void initUI() {
-        // TODO Auto-generated method stub
-        setTitle("Login - Smart Laundry");
+        setTitle("Register - Smart Laundry");
         setSize(550, 500);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -91,7 +92,7 @@ public class LoginFrame extends JFrame {
         lblTitle.setForeground(PRIMARY_COLOR);
         lblTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JLabel lblSubtitle = new JLabel("Silakan login untuk melanjutkan");
+        JLabel lblSubtitle = new JLabel("Silakan mendaftar untuk melanjutkan");
         lblSubtitle.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         lblSubtitle.setForeground(Color.GRAY);
         lblSubtitle.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -112,26 +113,25 @@ public class LoginFrame extends JFrame {
         styleTextField(txtPassword);
 
         //? Button Panel
-        btnLogin = new JButton("MASUK");
-        styleButton(btnLogin, PRIMARY_COLOR);
-        btnLogin.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btnRegister = new JButton("DAFTAR");
+        styleButton(btnRegister, PRIMARY_COLOR);
+        btnRegister.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         //? Registrasi Panel
-        JLabel lblRegister = new JLabel("Belum punya akun? Daftar disini");
-        lblRegister.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        lblRegister.setForeground(PRIMARY_COLOR);
-        lblRegister.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        lblRegister.setAlignmentX(Component.CENTER_ALIGNMENT);
+        JLabel lblLogin = new JLabel("Sudah punya akun? Login disini");
+        lblLogin.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lblLogin.setForeground(PRIMARY_COLOR);
+        lblLogin.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        lblLogin.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        lblRegister.addMouseListener(new MouseAdapter() {
+        lblLogin.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                new RegisterFrame().setVisible(true);
+                new LoginFrame().setVisible(true);
                 dispose();
             }
         });
 
-        //? Menambahkan komponen ke panel dengan jarak (RigidArea)
         mainPanel.add(Box.createVerticalStrut(0));
         mainPanel.add(lblIcon);
         mainPanel.add(Box.createVerticalStrut(0));
@@ -146,38 +146,35 @@ public class LoginFrame extends JFrame {
         mainPanel.add(Box.createVerticalStrut(5));
         mainPanel.add(txtPassword);
         mainPanel.add(Box.createVerticalStrut(25));
-        mainPanel.add(btnLogin);
+        mainPanel.add(btnRegister);
         mainPanel.add(Box.createVerticalStrut(15));
-        mainPanel.add(lblRegister);
+        mainPanel.add(lblLogin);
 
-        add(mainPanel); //! Tambahkan kartu ke frame
+        add(mainPanel);
 
         //? Action Listener
-        btnLogin.addActionListener(e -> prosesLogin());
-        //? Tekan Enter untuk login
-        getRootPane().setDefaultButton(btnLogin);
+        btnRegister.addActionListener(e -> prosesRegister());
+        getRootPane().setDefaultButton(btnRegister);
     }
 
-    private void prosesLogin() {
-        // TODO Auto-generated method stub
-        String user = txtUsername.getText();
-        String pass = new String(txtPassword.getPassword());
+    public void prosesRegister() {
+        String username = txtUsername.getText().trim();
+        String password = txtPassword.getText().trim();
 
-        if (user.isEmpty() || pass.isEmpty()) {
-            showCustomDialog("Peringatan", "Username dan Password harus diisi!", WARNING_COLOR);
+        if (username.isEmpty() || password.isEmpty()) {
+            showCustomDialog("Peringatan", "Username dan Password tidak boleh kosong.", WARNING_COLOR);
             return;
         }
 
-        if (authController.login(user, pass)) {
-            showCustomDialog("Berhasil", "Login Berhasil!\nSelamat Datang.", SUCCESS_COLOR);
+        authController = new AuthController();
+        boolean registered = authController.register(username, password);
 
-            new Timer(500, e -> {
-                new LaundryFrame().setVisible(true);
-                this.dispose();
-                ((Timer) e.getSource()).stop();
-            }).start();
+        if (registered) {
+            showCustomDialog("Sukses", "Registrasi berhasil! Silakan login.", SUCCESS_COLOR);
+            new LoginFrame().setVisible(true);
+            dispose();
         } else {
-            showCustomDialog("Gagal", "Username atau Password salah!", ERROR_COLOR);
+            showCustomDialog("Gagal", "Registrasi gagal. Username mungkin sudah terdaftar.", ERROR_COLOR);
         }
     }
 

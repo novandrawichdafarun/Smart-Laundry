@@ -125,6 +125,29 @@ public class TransaksiController {
     }
 
     @SuppressWarnings("CallToPrintStackTrace")
+    public boolean updateDataTransaksi(int id, String nama, String layanan, double berat, boolean isExpress, String status, double total) {
+        String sql = "UPDATE transaksi t JOIN pelanggan p ON t.id_pelanggan = p.id_pelanggan "
+                + "SET p.nama_lengkap=?, t.jenis_layanan=?, t.berat_kg=?, t.total_biaya=?, t.express=?, t.status_cucian=? "
+                + "WHERE t.id_transaksi=?";
+
+        try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, nama);
+            ps.setString(2, layanan);
+            ps.setDouble(3, berat);
+            ps.setString(4, isExpress ? "Express" : "Reguler");
+            ps.setString(5, status);
+            ps.setDouble(6, total);
+            ps.setInt(7, id);
+
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @SuppressWarnings("CallToPrintStackTrace")
     public boolean deleteTransaksi(int id) {
         String sql = "DELETE FROM transaksi WHERE id_transaksi = ?";
         try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {

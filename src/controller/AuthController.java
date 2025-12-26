@@ -40,4 +40,32 @@ public class AuthController {
         }
         return false;
     }
+
+    public boolean register(String username, String password) {
+        Connection con = DBConnection.getConnection();
+        if (con == null) {
+            return false;
+        }
+
+        String sql = "INSERT INTO users (username, password, role) VALUES (?, ?, 'pelanggan')";
+
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, username);
+            ps.setString(2, password);
+
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            if (e.getErrorCode() == 1062) { // Duplicate entry
+                System.err.println("Username sudah terdaftar.");
+            } else {
+                e.printStackTrace();
+            }
+            return false;
+        }
+    }
+
+    public boolean logout() {
+        UserSession.logout();
+        return true;
+    }
 }
