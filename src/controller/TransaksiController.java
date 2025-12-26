@@ -143,9 +143,9 @@ public class TransaksiController {
             ps.setString(1, nama);
             ps.setString(2, layanan);
             ps.setDouble(3, berat);
-            ps.setString(4, isExpress ? "Express" : "Reguler");
-            ps.setString(5, status);
-            ps.setDouble(6, total);
+            ps.setDouble(4, total);
+            ps.setString(5, isExpress ? "Express" : "Reguler");
+            ps.setString(6, status);
             ps.setInt(7, id);
 
             int rowsAffected = ps.executeUpdate();
@@ -218,10 +218,15 @@ public class TransaksiController {
     public void cariData(DefaultTableModel model, String keyword) {
         model.setRowCount(0);
 
-        String sql = "SELECT t.id_transaksi, t.tgl_masuk, p.nama_lengkap, t.jenis_layanan, t.berat_kg, t.total_biaya, t.status_cucian "
+        String sql = "SELECT t.id_transaksi, t.tgl_masuk, p.nama_lengkap, t.jenis_layanan, t.berat_kg, t.tipe_paket, t.total_biaya, t.status_cucian "
                 + "FROM transaksi t JOIN pelanggan p ON t.id_pelanggan = p.id_pelanggan "
-                + "WHERE p.nama_lengkap LIKE ? OR t.id_transaksi LIKE ? "
-                + "ORDER BY t.id_transaksi DESC";
+                + "WHERE (p.nama_lengkap LIKE ? OR t.id_transaksi LIKE ?) ";
+
+        if (UserSession.isPelanggan()) {
+            sql += "AND t.id_user = " + UserSession.getId() + " ";
+        }
+
+        sql += "ORDER BY t.id_transaksi DESC";
 
         try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
@@ -243,6 +248,7 @@ public class TransaksiController {
                         rs.getString("nama_lengkap"),
                         rs.getString("jenis_layanan"),
                         rs.getDouble("berat_kg"),
+                        rs.getString("tipe_paket"),
                         rs.getDouble("total_biaya"),
                         rs.getString("status_cucian")
                     });

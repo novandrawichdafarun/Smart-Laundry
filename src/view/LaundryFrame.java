@@ -1155,7 +1155,7 @@ public class LaundryFrame extends JFrame {
         lblTotalBaru.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         // status
-        JComboBox<String> cmbStatus = new JComboBox<>(new String[]{"Pending", "Proses", "Selesai", "Diambil"});
+        JComboBox<String> cmbStatus = new JComboBox<>(new String[]{"Menunggu", "Diterima", "Dicuci", "Selesai", "Diambil"});
         cmbStatus.setSelectedItem(statusLama);
         cmbStatus.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         cmbStatus.setBackground(Color.WHITE);
@@ -1172,22 +1172,25 @@ public class LaundryFrame extends JFrame {
 
         Runnable hitungUlang = () -> {
             try {
+                if (txtBerat.getText().isEmpty()) {
+                    lblTotalBaru.setText("Total Baru: Rp 0");
+                    return;
+                }
+
                 double berat = Double.parseDouble(txtBerat.getText());
                 String layanan = (String) cmbLayanan.getSelectedItem();
-                double harga = 0;
+                boolean isExpress = chkExpress.isSelected();
 
-                // Hitung manual sederhana untuk dialog ini
-                switch (layanan) {
-                    case "Cuci Basah":
-                        harga = berat * 3000;
-                        break;
-                    case "Cuci Kering":
-                        harga = berat * 4000;
-                        break;
-                    case "Setrika":
-                        harga = berat * 3500;
-                        break;
-                }
+                Layanan layananObj = switch (layanan) {
+                    case "Cuci Basah" ->
+                        new CuciBasah(berat, isExpress);
+                    case "Cuci Kering" ->
+                        new CuciKering(berat, isExpress);
+                    default ->
+                        new Setrika(berat, isExpress);
+                };
+                double harga = layananObj.hitungTotal();
+
                 lblTotalBaru.setText("Total Baru: Rp " + String.format("%,.0f", harga));
                 btnSimpan.putClientProperty("total_fix", harga);
             } catch (NumberFormatException ex) {
@@ -1212,6 +1215,8 @@ public class LaundryFrame extends JFrame {
             }
         });
         cmbLayanan.addActionListener(e -> hitungUlang.run());
+
+        chkExpress.addActionListener(e -> hitungUlang.run());
 
         hitungUlang.run();
 
@@ -1240,7 +1245,6 @@ public class LaundryFrame extends JFrame {
             boolean isExpressBaru = chkExpress.isSelected();
 
             if (txtBerat.getText().isEmpty()) {
-                lblTotalBaru.setText("Total: Rp 0");
                 return;
             }
 
@@ -1262,20 +1266,22 @@ public class LaundryFrame extends JFrame {
                     new Setrika(beratBaru, isExpressBaru);
             };
             double totalBaru = layanan.hitungTotal();
-            lblTotalBaru.setText("Total Baru: Rp " + String.format("%,.0f", totalBaru));
 
             // Simpan perubahan
-            if (controller.updateDataTransaksi(id, namaBaru, layLama, beratBaru, isExpressBaru, statusBaru, totalBaru)) {
+            if (controller.updateDataTransaksi(id, namaBaru, layBaru, beratBaru, isExpressBaru, statusBaru, totalBaru)) {
                 controller.loadData(tableModel);
                 updateStatistik();
-                chartPanel.updateData(controller.getGrafikPenjualan());
+                if (chartPanel != null) {
+                    chartPanel.updateData(controller.getGrafikPenjualan());
+                }
                 JOptionPane.showMessageDialog(dialog, "Data transaksi berhasil diupdate!");
                 dialog.dispose();
             } else {
-                JOptionPane.showMessageDialog(dialog, "Gagal update data transaksi.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(dialog, "Gagal update data.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
-
+        dialog.add(formPanel, BorderLayout.CENTER);
+        dialog.setVisible(true);
     }
 
 }
