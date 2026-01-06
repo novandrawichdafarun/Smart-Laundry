@@ -247,7 +247,7 @@ public class LaundryFrame extends JFrame {
         int baris = table.getSelectedRow();
         if (baris >= 0) {
             int id = (int) tableModel.getValueAt(baris, 0);
-            String status = (String) tableModel.getValueAt(baris, 7);
+            String status = (String) tableModel.getValueAt(baris, 8);
 
             controller.updateStatus(id, status);
             controller.loadData(tableModel);
@@ -266,15 +266,16 @@ public class LaundryFrame extends JFrame {
             if (row >= 0) {
                 int id = Integer.parseInt(tableModel.getValueAt(row, 0).toString());
                 String nama = tableModel.getValueAt(row, 2).toString();
-                String layanan = tableModel.getValueAt(row, 3).toString();
-                double berat = Double.parseDouble(tableModel.getValueAt(row, 4).toString());
+                String alamat = tableModel.getValueAt(row, 3).toString();
+                String layanan = tableModel.getValueAt(row, 4).toString();
+                double berat = Double.parseDouble(tableModel.getValueAt(row, 5).toString());
 
-                String tipePaket = tableModel.getValueAt(row, 5).toString();
+                String tipePaket = tableModel.getValueAt(row, 6).toString();
                 boolean isExpress = "Express".equalsIgnoreCase(tipePaket);
 
-                String status = tableModel.getValueAt(row, 7).toString();
+                String status = tableModel.getValueAt(row, 8).toString();
 
-                showEditTransaksiDialog(id, nama, layanan, berat, status, isExpress);
+                showEditTransaksiDialog(id, nama, alamat, layanan, berat, status, isExpress);
             } else {
                 showCustomDialog("Peringatan", "Pilih transaksi yang ingin diedit!", WARNING_COLOR);
             }
@@ -356,8 +357,8 @@ public class LaundryFrame extends JFrame {
         header.setForeground(Color.DARK_GRAY);
         ((DefaultTableCellRenderer) header.getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);
 
-        if (table.getColumnCount() > 7) {
-            table.getColumnModel().getColumn(7).setCellRenderer(new DefaultTableCellRenderer() {
+        if (table.getColumnCount() > 8) {
+            table.getColumnModel().getColumn(8).setCellRenderer(new DefaultTableCellRenderer() {
                 @Override
                 public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                     super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
@@ -517,10 +518,11 @@ public class LaundryFrame extends JFrame {
             int id = (int) tableModel.getValueAt(baris, 0);
             String tanggal = (String) tableModel.getValueAt(baris, 1);
             String nama = (String) tableModel.getValueAt(baris, 2);
-            String layanan = (String) tableModel.getValueAt(baris, 3);
-            double berat = (double) tableModel.getValueAt(baris, 4);
-            double total = (double) tableModel.getValueAt(baris, 6);
-            String status = (String) tableModel.getValueAt(baris, 7);
+            String alamat = (String) tableModel.getValueAt(baris, 3);
+            String layanan = (String) tableModel.getValueAt(baris, 4);
+            double berat = (double) tableModel.getValueAt(baris, 5);
+            double total = (double) tableModel.getValueAt(baris, 7);
+            String status = (String) tableModel.getValueAt(baris, 8);
 
             int confirm = JOptionPane.showConfirmDialog(this,
                     "Cetak struk untuk transaksi #" + id + "?",
@@ -528,7 +530,7 @@ public class LaundryFrame extends JFrame {
                     JOptionPane.YES_NO_OPTION);
 
             if (confirm == JOptionPane.YES_OPTION) {
-                StrukPrinter printer = new StrukPrinter(id, tanggal, nama, layanan, berat, total, status);
+                StrukPrinter printer = new StrukPrinter(id, tanggal, nama, alamat, layanan, berat, total, status);
                 printer.printStruk();
             }
         } else {
@@ -824,7 +826,7 @@ public class LaundryFrame extends JFrame {
         panel.add(headerJPanel, BorderLayout.NORTH);
 
         // Tabel
-        String[] kolom = {"ID", "Tanggal", "Nama", "Layanan", "Berat", "Tipe", "Biaya", "Status"};
+        String[] kolom = {"ID", "Tanggal", "Nama", "Alamat", "Layanan", "Berat", "Tipe", "Biaya", "Status"};
         tableModel = new DefaultTableModel(kolom, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -1125,9 +1127,9 @@ public class LaundryFrame extends JFrame {
         dialog.setVisible(true);
     }
 
-    private void showEditTransaksiDialog(int id, String namaLama, String layLama, double beratLama, String statusLama, boolean isExpressLama) {
+    private void showEditTransaksiDialog(int id, String namaLama, String alamatLama, String layLama, double beratLama, String statusLama, boolean isExpressLama) {
         JDialog dialog = new JDialog(this, "Edit Data Transaksi", true);
-        dialog.setSize(350, 450);
+        dialog.setSize(400, 550);
         dialog.setLayout(new BorderLayout());
         dialog.setLocationRelativeTo(this);
 
@@ -1136,8 +1138,16 @@ public class LaundryFrame extends JFrame {
         formPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
         formPanel.setBackground(Color.WHITE);
 
+        JLabel lblInputTitle = new JLabel("Edit Data Transaksi");
+        lblInputTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        lblInputTitle.setForeground(PRIMARY_COLOR);
+        lblInputTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+
         JTextField txtNama = createTextField();
         txtNama.setText(namaLama);
+
+        JTextField txtAlamat = createTextField();
+        txtAlamat.setText(alamatLama);
 
         JTextField txtBerat = createTextField();
         txtBerat.setText(String.valueOf(beratLama));
@@ -1220,8 +1230,13 @@ public class LaundryFrame extends JFrame {
 
         hitungUlang.run();
 
+        formPanel.add(lblInputTitle);
+        formPanel.add(Box.createVerticalStrut(20));
         formPanel.add(createLabel("Nama Pelanggan:"));
         formPanel.add(txtNama);
+        formPanel.add(Box.createVerticalStrut(10));
+        formPanel.add(createLabel("Alamat Pelanggan: "));
+        formPanel.add(txtAlamat);
         formPanel.add(Box.createVerticalStrut(10));
         formPanel.add(createLabel("Berat (Kg):"));
         formPanel.add(txtBerat);
@@ -1240,6 +1255,7 @@ public class LaundryFrame extends JFrame {
 
         btnSimpan.addActionListener(e -> {
             String namaBaru = txtNama.getText().trim();
+            String alamatbaru = txtAlamat.getText().trim();
             String layBaru = (String) cmbLayanan.getSelectedItem();
             String statusBaru = (String) cmbStatus.getSelectedItem();
             boolean isExpressBaru = chkExpress.isSelected();
@@ -1268,7 +1284,7 @@ public class LaundryFrame extends JFrame {
             double totalBaru = layanan.hitungTotal();
 
             // Simpan perubahan
-            if (controller.updateDataTransaksi(id, namaBaru, layBaru, beratBaru, isExpressBaru, statusBaru, totalBaru)) {
+            if (controller.updateDataTransaksi(id, namaBaru, alamatbaru, layBaru, beratBaru, isExpressBaru, statusBaru, totalBaru)) {
                 controller.loadData(tableModel);
                 updateStatistik();
                 if (chartPanel != null) {

@@ -74,7 +74,7 @@ public class TransaksiController {
     public void loadData(DefaultTableModel model) {
         model.setRowCount(0);
 
-        String sql = "SELECT t.id_transaksi, t.tgl_masuk, p.nama_lengkap, t.jenis_layanan, t.berat_kg, t.tipe_paket, t.total_biaya, t.status_cucian "
+        String sql = "SELECT t.id_transaksi, t.tgl_masuk, p.nama_lengkap, p.alamat, t.jenis_layanan, t.berat_kg, t.tipe_paket, t.total_biaya, t.status_cucian "
                 + "FROM transaksi t JOIN pelanggan p ON t.id_pelanggan = p.id_pelanggan ";
 
         if (UserSession.isPelanggan()) {
@@ -97,11 +97,12 @@ public class TransaksiController {
                     rs.getInt("id_transaksi"), // 0
                     tanggal, // 1
                     rs.getString("nama_lengkap"), // 2
-                    rs.getString("jenis_layanan"), // 3
-                    rs.getDouble("berat_kg"), // 4
-                    rs.getString("tipe_paket"), // 5
-                    rs.getDouble("total_biaya"), // 6
-                    rs.getString("status_cucian") // 7
+                    rs.getString("alamat"), // 3
+                    rs.getString("jenis_layanan"), // 4
+                    rs.getDouble("berat_kg"), // 5
+                    rs.getString("tipe_paket"), // 6
+                    rs.getDouble("total_biaya"), // 7
+                    rs.getString("status_cucian") // 8
                 });
             }
         } catch (SQLException e) {
@@ -136,19 +137,20 @@ public class TransaksiController {
     }
 
     @SuppressWarnings("CallToPrintStackTrace")
-    public boolean updateDataTransaksi(int id, String nama, String layanan, double berat, boolean isExpress, String status, double total) {
+    public boolean updateDataTransaksi(int id, String nama, String alamat, String layanan, double berat, boolean isExpress, String status, double total) {
         String sql = "UPDATE transaksi t JOIN pelanggan p ON t.id_pelanggan = p.id_pelanggan "
                 + "SET p.nama_lengkap=?, t.jenis_layanan=?, t.berat_kg=?, t.total_biaya=?, t.tipe_paket=?, t.status_cucian=? "
                 + "WHERE t.id_transaksi=?";
 
         try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, nama);
-            ps.setString(2, layanan);
-            ps.setDouble(3, berat);
-            ps.setDouble(4, total);
-            ps.setString(5, isExpress ? "Express" : "Reguler");
-            ps.setString(6, status);
-            ps.setInt(7, id);
+            ps.setString(2, alamat);
+            ps.setString(3, layanan);
+            ps.setDouble(4, berat);
+            ps.setDouble(5, total);
+            ps.setString(6, isExpress ? "Express" : "Reguler");
+            ps.setString(7, status);
+            ps.setInt(8, id);
 
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
@@ -220,7 +222,7 @@ public class TransaksiController {
     public void cariData(DefaultTableModel model, String keyword) {
         model.setRowCount(0);
 
-        String sql = "SELECT t.id_transaksi, t.tgl_masuk, p.nama_lengkap, t.jenis_layanan, t.berat_kg, t.tipe_paket, t.total_biaya, t.status_cucian "
+        String sql = "SELECT t.id_transaksi, t.tgl_masuk, p.nama_lengkap, p.alamat, t.jenis_layanan, t.berat_kg, t.tipe_paket, t.total_biaya, t.status_cucian "
                 + "FROM transaksi t JOIN pelanggan p ON t.id_pelanggan = p.id_pelanggan "
                 + "WHERE (p.nama_lengkap LIKE ? OR t.id_transaksi LIKE ?) ";
 
@@ -248,6 +250,7 @@ public class TransaksiController {
                         rs.getInt("id_transaksi"),
                         tanggal,
                         rs.getString("nama_lengkap"),
+                        rs.getString("alamat"),
                         rs.getString("jenis_layanan"),
                         rs.getDouble("berat_kg"),
                         rs.getString("tipe_paket"),
