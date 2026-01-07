@@ -18,12 +18,16 @@ public class DBConnection {
     public static Connection getConnection() {
         try {
             if (instance == null || instance.isClosed()) {
+                Class.forName("com.mysql.jdbc.Driver");
                 instance = DriverManager.getConnection(URL, USER, PASS);
                 System.out.println("Koneksi Baru Dibuat ke Database");
             }
             return instance;
         } catch (SQLException e) {
             System.err.println("Koneksi Gagal: " + e.getMessage());
+            return null;
+        } catch (ClassNotFoundException e) {
+            System.err.println("Driver Tidak Ditemukan: " + e.getMessage());
             return null;
         }
     }

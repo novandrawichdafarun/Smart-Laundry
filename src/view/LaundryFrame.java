@@ -852,6 +852,10 @@ public class LaundryFrame extends JFrame {
         JButton btnUpdateStatus = createButton("Update Status", new Color(243, 156, 18));
         JButton btnUpdateData = createButton("Update Data", new Color(41, 128, 185));
         JButton btnDelete = createButton("Hapus Data", new Color(231, 76, 60));
+        // JButton btnLaporan = createButton("Laporan Penjualan", new Color(142, 68, 173)); // Warna Ungu
+        // btnLaporan.addActionListener(e -> {
+        //     new LaporanDialog(this).setVisible(true);
+        // });
 
         // Listener tombol
         btnPrint.addActionListener(e -> prosesCetakStruk());
@@ -860,6 +864,7 @@ public class LaundryFrame extends JFrame {
         btnDelete.addActionListener(e -> prosesDelete());
 
         if (UserSession.isSuperAdmin()) {
+            // bottomPanel.add(btnLaporan);
             bottomPanel.add(btnUpdateStatus);
             bottomPanel.add(btnUpdateData);
             bottomPanel.add(btnDelete);
