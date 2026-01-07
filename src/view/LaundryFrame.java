@@ -732,10 +732,10 @@ public class LaundryFrame extends JFrame {
         JPanel card1 = createStatCard("Pendapatan Hari Ini", "Rp 0", new Color(46, 204, 113), "$");
         lblStatOmset = (JLabel) ((JPanel) card1.getComponent(0)).getComponent(1);
 
-        JPanel card2 = createStatCard("Total Transaksi", "0", new Color(52, 152, 219), "#");
+        JPanel card2 = createStatCard("Total Transaksi Hari Ini", "0", new Color(52, 152, 219), "#");
         lblStatTransaksi = (JLabel) ((JPanel) card2.getComponent(0)).getComponent(1);
 
-        JPanel card3 = createStatCard("Total Berat (Kg)", "0", new Color(243, 156, 18), "Kg");
+        JPanel card3 = createStatCard("Total Berat Hari Ini (Kg)", "0", new Color(243, 156, 18), "Kg");
         lblStatBerat = (JLabel) ((JPanel) card3.getComponent(0)).getComponent(1);
 
         statsPanel.add(card1);
