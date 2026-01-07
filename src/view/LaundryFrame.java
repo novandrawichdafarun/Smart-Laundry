@@ -860,7 +860,6 @@ public class LaundryFrame extends JFrame {
         btnDelete.addActionListener(e -> prosesDelete());
 
         if (UserSession.isSuperAdmin()) {
-            bottomPanel.add(btnPrint);
             bottomPanel.add(btnUpdateStatus);
             bottomPanel.add(btnUpdateData);
             bottomPanel.add(btnDelete);

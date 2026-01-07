@@ -41,6 +41,7 @@ public class AuthController {
         return false;
     }
 
+    @SuppressWarnings("CallToPrintStackTrace")
     public boolean register(String username, String password) {
         Connection con = DBConnection.getConnection();
         if (con == null) {

@@ -39,11 +39,6 @@ public class StrukPrinter implements Printable {
             return NO_SUCH_PAGE;
         }
 
-        //? Font
-        Font fontHeader = new Font("SansSerif", Font.BOLD, 14);
-        Font fontContent = new Font("Monospaced", Font.PLAIN, 10);
-        Font fontPrice = new Font("Monospaced", Font.BOLD, 12);
-
         //? Logo
         Image logo = new ImageIcon(getClass().getResource("/img/Logo.png")).getImage();
 
